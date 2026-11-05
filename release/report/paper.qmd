@@ -1,0 +1,785 @@
+---
+title: "Revisiting the Disability Employment Gap after the ADA"
+subtitle: "Published-specification reconstruction and standardized repeated-cross-section evidence"
+bibliography: references.bib
+link-citations: true
+format:
+  html:
+    toc: true
+    number-sections: true
+    code-fold: true
+    embed-resources: true
+    html-math-method: mathml
+  pdf:
+    documentclass: article
+    pdf-engine: pdflatex
+    latex-auto-install: false
+    fontsize: 11pt
+    linestretch: 1.15
+    toc: false
+    number-sections: true
+    geometry: margin=1in
+execute:
+  echo: false
+  warning: false
+  message: false
+  error: false
+---
+
+```{r}
+#| label: setup
+root <- if (dir.exists("results") && dir.exists("R")) "." else ".."
+result_file <- function(name) file.path(root, "results", name)
+read_result <- function(name, required = character()) {
+  path <- result_file(name)
+  if (!file.exists(path)) return(NULL)
+  x <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+  if (!nrow(x)) return(NULL)
+  missing <- setdiff(required, names(x))
+  if (length(missing)) stop(name, " lacks columns: ", paste(missing, collapse = ", "))
+  x
+}
+metadata <- if (file.exists(result_file("run-metadata.rds"))) readRDS(result_file("run-metadata.rds")) else NULL
+if (is.null(metadata) || !identical(metadata$data_kind, "empirical"))
+  stop("This empirical manuscript requires a validated empirical results run. Synthetic fixtures are not research findings.")
+descriptives <- read_result("descriptives.csv", c("outcome_year","sex","age_sample","disabled","n","weight_sum","mean_weeks","mean_worked_any"))
+event_study <- read_result("event_study.csv", c("sex","age_sample","outcome","year","estimate","std_error","conf_low","conf_high"))
+extension <- read_result("extension.csv", c("sex","age_sample","outcome","window","method","estimate"))
+benchmarks <- read_result("replication_benchmarks.csv", c("table","sex","age_sample","outcome","statistic","year","target","reproduced","passed"))
+if (any(vapply(list(descriptives,event_study,extension,benchmarks), is.null, logical(1))))
+  stop("Core empirical outputs or benchmark comparisons are missing; regenerate the analysis before rendering.")
+overlap <- read_result("overlap.csv")
+balance <- read_result("balance.csv")
+sensitivity <- read_result("sensitivity.csv")
+placebo <- read_result("placebo.csv")
+distributional <- read_result("distributional.csv")
+rich <- read_result("extension_rich.csv")
+bootstrap <- read_result("bootstrap.csv")
+failures <- read_result("extension_failures.csv")
+exclusions <- read_result("exclusions.csv")
+samples <- read_result("extension_samples.csv")
+models <- read_result("replication_models.csv")
+is_aipw <- function(x) grepl("^aipw", x, ignore.case = TRUE)
+method_label <- function(x) unname(c(unadjusted_did="DID",outcome_standardized_did="RA",ipw_standardized_did="IPW",aipw_standardized_did="AIPW")[x])
+group_label <- function(sex,age) paste(ifelse(sex=="male","Men","Women"), ifelse(age=="young","21–39","40–58"))
+outcome_label <- function(x) ifelse(x=="weeks","Weeks","Any work (pp)")
+scale_outcome <- function(x,outcome) x * ifelse(outcome=="worked_any",100,1)
+ordered <- function(x) x[order(match(x$sex,c("male","female")),match(x$age_sample,c("young","old")),match(x$outcome,c("weeks","worked_any","cdf_weeks"))),,drop=FALSE]
+fmt <- function(x,d=2) formatC(x,format="f",digits=d)
+count <- function(x) format(x,big.mark=",",scientific=FALSE,trim=TRUE)
+value <- function(sex,age,outcome="weeks",window="main",table=extension,method="aipw_standardized_did") {
+  z <- table[table$sex==sex & table$age_sample==age & table$outcome==outcome & table$window==window & table$method==method,,drop=FALSE]
+  if (nrow(z)!=1) stop("Nonunique or unavailable narrative estimate: ",sex,"/",age,"/",outcome,"/",window)
+  z$estimate
+}
+mean_at <- function(sex,age,year,disabled=1) {
+  z <- descriptives[descriptives$sex==sex & descriptives$age_sample==age & descriptives$outcome_year==year & descriptives$disabled==disabled,,drop=FALSE]
+  stopifnot(nrow(z)==1);z$mean_weeks
+}
+main_weeks <- function(x) {
+  if (is.null(x)) return(NULL)
+  if ("window" %in% names(x)) x <- x[x$window=="main",,drop=FALSE]
+  if ("outcome" %in% names(x)) x <- x[x$outcome=="weeks",,drop=FALSE]
+  x
+}
+show_table <- function(x,caption,digits=3) print(knitr::kable(x,caption=caption,digits=digits,row.names=FALSE))
+main_aipw <- ordered(extension[extension$window=="main" & is_aipw(extension$method),,drop=FALSE])
+benchmark_matches <- sum(benchmarks$passed)
+benchmark_n <- nrow(benchmarks)
+benchmark_discrepancies <- sum(!benchmarks$passed)
+count_matches <- sum(benchmarks$passed & benchmarks$statistic=="n")
+count_checks <- sum(benchmarks$statistic=="n")
+trend_main <- unique(main_weeks(sensitivity)[c("sex","age_sample","estimate","year_separation","zero_effect_slope")])
+```
+
+## Abstract {.unnumbered}
+
+This study reconstructs selected results from Acemoglu and Angrist's analysis
+of the Americans with Disabilities Act (ADA) and extends it using a common-target
+repeated-cross-section design. The supplied CPS extract contains
+`r count(metadata$retained_rows)` positive-weight observations aged 21--58.
+Against an inspected July 2001 paper proof, `r benchmark_matches` of
+`r benchmark_n` selected numerical entries match their printed precision,
+including all `r count_matches` checked sample counts;
+`r benchmark_discrepancies` discrepancies remain. No original analysis programs
+were supplied. Comparing outcome years 1987--1989 with 1993--1996, augmented
+standardized contrasts in annual weeks worked are
+`r fmt(value("male","young"))` and `r fmt(value("male","old"))` for men aged
+21--39 and 40--58, and `r fmt(value("female","young"))` and
+`r fmt(value("female","old"))` for the corresponding female strata. The largest
+any-work decline is `r fmt(100*abs(value("female","young","worked_any")))`
+percentage points among younger women. Regression adjustment, weighting, and
+augmentation give similar primary estimates, but richer adjustment and timing
+choices matter, and pre-policy placebo contrasts are not uniformly zero.
+Additional negative untreated trends with magnitudes of approximately
+`r fmt(min(abs(trend_main$zero_effect_slope)))` to
+`r fmt(max(abs(trend_main$zero_effect_slope)))` weeks per year would eliminate
+the main weeks contrasts under a declared linear scenario. The findings establish
+negative changes in standardized disability-group employment gaps. Interpreting
+them as ADA effects requires additional assumptions about counterfactual trends,
+comparison-group spillovers, and endogenous disability reporting; neither
+numerical reconstruction nor nuisance-model robustness supplies those assumptions.
+
+```{r}
+#| label: abstract-inference
+#| results: asis
+if (is.null(bootstrap)) {
+  cat("*Inference status: point estimates are complete; the optional full-refit bootstrap is pending in this render. No AIPW confidence claim is made from these point estimates.*\n")
+} else {
+  cat("*Reported bootstrap intervals are conditional individual-sampling approximations, not survey-design or randomized-policy uncertainty.*\n")
+}
+if (!is.null(failures)) cat("**Some declared analyses failed; all failures are retained below.**\n")
+```
+
+# Introduction
+
+Employment protections can remove discrimination and make accommodation
+possible while also changing employers' perceived hiring and retention costs.
+The Americans with Disabilities Act (ADA) is an influential setting for studying
+this tension. Acemoglu and Angrist report relative employment declines among
+several disability groups after implementation and interpret the broader pattern
+of evidence as consistent with an adverse employment effect [@acemoglu2001].
+Yet an observed change in a disability employment gap is not automatically an
+estimate of the law's effect. A national policy arrived during a changing labor
+market, and work-limitation reporting can respond to employment conditions.
+
+This paper asks three questions. How closely can selected historical results be
+reconstructed from the supplied extract and published specification? How do
+post-policy employment-gap changes depend on observed composition and the
+population to which they are standardized? How sensitive is a policy
+interpretation to timing, pre-policy patterns, and departures from parallel
+trends? The primary outcomes are annual weeks worked and any positive work.
+Threshold indicators describe changes across the weeks-worked distribution
+without claiming to identify individual or quantile treatment effects.
+
+The contribution builds on, rather than replaces, the original analysis. Its
+Table 3 already estimates covariate-cell DID effects and averages them over the
+pre-period disabled distribution; its appendix investigates reporting changes
+with matched CPS observations. The present extension makes a different target
+explicit—the observed disabled-post covariate distribution—and compares
+regression adjustment, inverse-probability weighting, and augmentation for
+that target. It adds reproducible support and balance diagnostics, a full-refit
+working bootstrap, placebo and threshold analyses, and a quantified trend
+scenario. The distinction between a statistical target and a causal estimand
+follows the potential-outcomes framework emphasized by @ding2024.^[Peng Ding's
+*A First Course in Causal Inference* is the working textbook reference; no
+edition-specific chapter or page mapping is claimed.]
+
+The reconstructed weeks coefficients agree closely with the inspected source,
+but the exercise is not a perfect replication. The empirical extension finds
+negative standardized changes for all four sex/age strata, with the largest
+weeks and any-work changes among younger women. These contrasts are
+observational. Their interpretation is limited by a single national policy
+timeline, potentially changing disability classification, and the counterfactual
+trend required for DID. A negative pooled gap also need not imply that the
+absolute employment level of every disability group fell.
+
+# Institutional context and prior evidence
+
+Title I prohibits disability discrimination in covered employment and requires
+reasonable accommodation subject to the statute's qualifications. The ADA was
+enacted on July 26, 1990; its employment provisions initially covered employers
+with at least 25 employees in July 1992, extending to employers with at least
+15 employees in July 1994 [@ada1990]. The original paper documents this
+sequence on proof page 4. Passage can precede behavioral responses, annual
+outcomes can span partial exposure, and establishment coverage varies. A
+universal sharp treatment switch would therefore be an oversimplification.
+
+```{r}
+#| label: policy-timeline
+#| fig-cap: "Policy and measurement timeline. Legal implementation dates follow Title I of the ADA; CPS outcome-year coverage follows the verified source description. Shaded windows are analysis choices, not observed treatment assignments."
+#| fig-width: 8
+#| fig-height: 2.5
+old_par <- par(mar = c(3, 1, 1, 1))
+plot(NA, xlim = c(1986.7, 1997), ylim = c(0, 1), xaxt = "n", yaxt = "n",
+     xlab = "Calendar / annual outcome year", ylab = "", bty = "n")
+rect(1987, .06, 1990, .23, col = "#DDEAF0", border = NA)
+rect(1993, .06, 1997, .23, col = "#F0DED8", border = NA)
+text(1988.5, .145, "Main pre window: 1987-1989", cex = .78)
+text(1995, .145, "Main post window: 1993-1996", cex = .78)
+segments(1987, .43, 1997, .43, col = "grey45", lwd = 1.5)
+axis(1, at = 1987:1997, labels = 1987:1997, cex.axis = .8)
+events <- c(1990 + 206/365, 1992 + 207/366, 1994 + 206/365)
+points(events, rep(.43, 3), pch = 19, col = "#245571")
+segments(events, .43, events, c(.8, .64, .8), col = "#245571")
+text(events, c(.91, .69, .91),
+     c("Passage\nJuly 26, 1990", "Title I: 25+ employees\nJuly 26, 1992",
+       "Title I: 15+ employees\nJuly 26, 1994"), cex = .77)
+par(old_par)
+```
+
+Protection may improve access or retention, while anticipated accommodation
+or litigation costs may change hiring. The original study goes beyond a
+single regression: it examines benefits participation, employer size, state
+charge activity, and matched CPS outcomes. It also finds no clear adverse
+employment result for older women in its overall interpretation
+[@acemoglu2001, proof pp. 3, 21, 35--38]. Our reconstructed Table 2 and pooled
+extension do not reproduce all of those designs, and their estimates cannot
+be used to identify an employer-cost mechanism by themselves.
+
+The ADA literature also debates classification and composition
+[@deleire2000; @bound2002; @hotchkiss2004]. Modern DID methods clarify how
+covariates can improve an observed-data comparison [@abadie2005; @santanna2020],
+while work on pretests, trend restrictions, and dependence cautions against
+strong conclusions from a favorable specification alone
+[@roth2022; @rambachan2023; @bertrand2004]. Our four-cell transport estimator
+is stated directly; it is not represented as an implementation of the
+specialized efficient score in @santanna2020.
+
+# Data and historical reconstruction
+
+## Source identity, sample, and measurement
+
+The retrieved archive contains `marcps_w.sas7bdat` and a 45-page typeset proof
+dated July 2, 2001. It contains no original analysis programs. Page locators
+below refer to that proof, not final journal pagination. File identities and
+checksums are recorded in the repository's source manifest; the proof has not
+been independently compared with the final printing. The exercise consequently
+reconstructs selected published specifications rather than certifying a
+line-by-line translation of original SAS code.
+
+The extract has `r count(metadata$input_rows)` records. Restricting age to
+21--58 gives `r count(metadata$input_rows - exclusions$n[exclusions$reason=="outside_age_21_58_or_missing"])`
+records; removing unusable nonpositive or missing analysis weights leaves
+`r count(metadata$retained_rows)`. This distinction matters for reconstruction:
+Table 1 prints raw age-eligible counts, whereas weighted calculations use usable
+positive weights. Table 2's eight employment and wage estimation counts match
+exactly. The weights are `FNLWGT2 / 100`; proof page 37 describes CPS weights
+updated to 1990 Census population counts but does not name the raw variable.
+Source labels and numerical checks support the mapping without replacing the
+missing original programs.
+
+The outcome clock is documented rather than inferred. March surveys 1988--1997
+report annual weeks and earnings for 1987--1996. Table 1 and specified source
+figures use survey years; Table 2 uses outcome years. Disability is an
+interview-time work-limitation report that introduces questions about disability
+income in the preceding year, so its temporal interpretation is less clean than
+the annual outcome clock [@acemoglu2001, proof pp. 11--12]. The source also
+notes the 1988 rewrite file, exclusion of the Hispanic oversample, and selected
+duplicate 1994 household identifiers (proof p. 37).
+
+Weeks worked includes zero, and any work indicates positive weeks. Wage models
+require positive weeks and earnings and retain the disclosed legacy eligibility
+rule of weekly wages between $25 and $2,000 in its 1988-dollar scale. The proof
+describes this range but does not determine every detail of the supplied
+survey-year CPI implementation. Matching wage sample sizes does not prove that
+all wage transformations have been recovered. Conditional wages also concern
+a selected working population, not unconditional effects on all workers.
+
+## What the numerical comparisons establish
+
+The comparison covers selected Table 1 ages, weeks, and counts, and Table 2's
+no-trend weeks and log-wage coefficients, standard errors, and sample sizes.
+It does not reproduce every table or the original cell estimator. Printed
+precision determines the comparison tolerance; counts require exact agreement.
+The reconstructed Table 2 uses disability-by-year interactions relative to
+outcome year 1987 and full categorical year interactions with age group, race,
+schooling, and region. Numeric category slopes are not substituted for those
+indicators. Conventional WLS covariance is used for the historical comparison,
+separately from the extension's HC1 event-study intervals.
+
+```{r}
+#| label: benchmark-table
+#| results: asis
+b <- benchmarks
+b$component <- paste(b$table, ifelse(b$outcome=="log_weekly_wage","log wage",b$outcome), ifelse(b$statistic=="std_error","standard errors",ifelse(b$statistic=="coefficient","coefficients",b$statistic)))
+b$component[b$table=="Table 1" & b$statistic=="n"] <- "Table 1 population counts"
+b$component[b$table=="Table 2" & b$statistic=="n"] <- "Table 2 estimation counts"
+summary_b <- aggregate(cbind(Matched=as.integer(b$passed),Checked=rep(1L,nrow(b))),list(Component=b$component),sum)
+show_table(summary_b,"Selected numerical comparisons with the supplied proof. Matching is assessed at printed precision; this is not a claim to reproduce the whole paper.",digits=0)
+```
+
+Overall, `r benchmark_matches` of `r benchmark_n` checked entries agree,
+including all `r count_matches` sample counts. The
+`r benchmark_discrepancies` retained discrepancies comprise one Table 1 mean,
+one Table 2 wage coefficient, and five standard errors. The largest descriptive
+mismatch is disabled women aged 40--58 in survey year 1996: the proof prints
+11.3 weeks and the extract yields approximately 11.76. Visual inspection
+confirms the printed entry. Independent `stats::lm` checks reproduce selected
+disputed regression values, but neither those checks nor close agreement elsewhere
+proves that the proof contains errors. The appendix and machine-readable audit
+retain every discrepancy; the status is reconstruction with reported
+discrepancies, not perfect replication.
+
+# Research design and estimands
+
+Let $G$ denote observed disability, $T$ the declared pre/post period, and $X$
+observed covariates. Define $m_{gt}(x)=E[Y\mid G=g,T=t,X=x]$. The common-target
+statistical contrast is
+
+$$
+\theta=E\{m_{11}(X)-m_{10}(X)-m_{01}(X)+m_{00}(X)\mid G=1,T=1\}.
+$$
+
+RA, IPW, and AIPW integrate all four conditional means over the disabled-post
+covariate distribution. Raw DID instead averages each cell over its own
+observed distribution, and is a benchmark rather than an identical estimand
+when composition differs. The original Table 3 standardizes 162 age-by-race-by-
+schooling-by-region cells to disabled respondents in the 1988--1991 CPS
+[@acemoglu2001, proof pp. 19--20]. Changing to a post target changes the question;
+it is not inherently a correction to the original target.
+
+For a causal interpretation, let $G^*$ denote a stable pre-policy group and
+$Y_t(a)$ the outcome under ADA regime $a$. Conditional parallel trends requires
+
+$$
+E[Y_1(0)-Y_0(0)\mid G^*=1,X]
+ =E[Y_1(0)-Y_0(0)\mid G^*=0,X].
+$$
+
+No anticipation, appropriate repeated-sample composition, common support, and
+comparable measurement are additional requirements. If nondisabled workers
+are also affected through substitution or equilibrium responses, DID is a
+relative effect; treating it as the effect on disabled workers alone requires
+an assumption about those comparison-group effects. Disability defines a group,
+not the policy intervention.
+
+```{r}
+#| label: fig-reporting-graph
+#| fig-cap: "Conceptual pathways relevant to disability classification. Arrows represent plausible causal pathways, not estimated effects. The analysis conditions on observed reporting G; it does not observe a fixed pre-policy disability group. Macro conditions U can affect employment alongside the policy timeline."
+#| fig-width: 8
+#| fig-height: 3.4
+old_par <- par(mar = c(0, 0, 0, 0))
+plot(NA, xlim = c(0, 1), ylim = c(0, 1), axes = FALSE, xlab = "", ylab = "")
+pos <- rbind(X = c(.14,.86), H = c(.54,.86), A = c(.14,.53),
+             Y = c(.54,.53), G = c(.88,.53), U = c(.14,.17), B = c(.54,.17))
+edge <- function(a, b) {
+  p <- pos[a,]; q <- pos[b,]; delta <- q-p
+  boundary <- min(.095 / abs(delta[1]), .085 / abs(delta[2]))
+  start <- p + (boundary + .015) * delta
+  end <- q - (boundary + .015) * delta
+  arrows(start[1], start[2], end[1], end[2], length = .085, col = "grey45")
+}
+for (e in list(c("X","H"),c("X","Y"),c("H","Y"),c("H","G"),
+               c("A","Y"),c("U","Y"),c("Y","G"),c("Y","B"),
+               c("B","G"))) edge(e[1],e[2])
+labels <- c(X="Observed\ncovariates X", H="Underlying\nhealth H", A="Policy\nregime A",
+            Y="Employment\noutcome Y", G="Disability\nreport G", U="Macro\nconditions U",
+            B="Benefit\nparticipation B")
+for (name in rownames(pos)) {
+  p <- pos[name,]
+  rect(p[1]-.095,p[2]-.085,p[1]+.095,p[2]+.085,
+       col = if (name=="G") "#F0DED8" else "#E4EDF1", border = "grey50")
+  text(p[1],p[2],labels[name],cex=.92)
+}
+par(old_par)
+```
+
+Observed $G$ need not equal stable $G^*$. Health, employment, benefit behavior,
+and policy awareness can change work-limitation reporting. The conceptual
+pathways in @fig-reporting-graph explain why conditioning on the report can
+select different populations over time. Benefits or realized employment should
+not be added as baseline confounders merely because they predict the report.
+The original paper already examines classification and the CPS redesign using
+matched 1993/1994 observations, finding more stable results for older men and
+younger women than younger men; matching itself is selective
+[@acemoglu2001, proof pp. 21, 37--38]. Our repeated-cross-section diagnostics
+neither recreate nor supersede that evidence. Without stronger stability
+assumptions, the defensible interpretation remains a standardized change in
+observed employment disparities.
+
+The main comparison uses outcome years 1987--1989 and 1993--1996, excluding
+passage/transition years. Alternatives use a later 1995--1996 post period or
+1987--1991 pre period. The extension event study is referenced to 1989,
+whereas historical Table 2 is referenced to 1987. The primary covariates are
+centered age, squared age, and recorded race within each sex/age stratum.
+Education and region are added as a sensitivity analysis because contemporaneous
+values can themselves reflect mobility or prior employment history. Equal total
+survey weight across years within each period prevents sample-size changes
+from determining year importance. All four methods use the same complete
+outcome sample for a given comparison.
+
+# Estimation, support, and working inference
+
+Let $A=(G,T)$, target $a^*=11$, $q_a(x)=P(A=a\mid X=x)$, and
+$S^*=\sum_i s_iI(A_i=11)$ for analysis weights $s_i$. A weighted multinomial
+model estimates cell probabilities and weighted linear regressions estimate
+source-cell outcomes. For $a\ne11$,
+
+\begin{align*}
+\widehat\mu_a^{\mathrm{RA}}&=
+ \frac{\sum_i s_iI(A_i=11)\widehat m_a(X_i)}{S^*},\\
+\widehat\mu_a^{\mathrm{IPW}}&=
+ \frac{\sum_i s_iI(A_i=a)\widehat r_a(X_i)Y_i}
+      {\sum_i s_iI(A_i=a)\widehat r_a(X_i)},\\
+\widehat\mu_a^{\mathrm{AIPW}}&=
+ \widehat\mu_a^{\mathrm{RA}}+
+ \frac{\sum_i s_iI(A_i=a)\widehat r_a(X_i)\{Y_i-\widehat m_a(X_i)\}}{S^*},
+ \quad \widehat r_a=\widehat q_{11}/\widehat q_a.
+\end{align*}
+
+The target mean is observed, and
+$\widehat\theta=\widehat\mu_{11}-\widehat\mu_{10}-\widehat\mu_{01}+\widehat\mu_{00}$.
+IPW uses a Hájek denominator; the augmentation residual uses target mass.
+For each transported mean, a correct outcome model gives conditional
+mean-zero residuals, while a correct density ratio transports residual error
+to the target. Either nuisance component can therefore suffice for consistency
+under support and regularity conditions. This property must hold for all
+three source means and does not repair invalid parallel trends or endogenous
+classification. The parametric linear models are inspectable; flexibility and
+cross-fitting would require a separately specified procedure.
+
+An initial software guard required every joint cell probability to exceed
+0.01. Inspection of support before main-effect estimates showed that this
+confounded rare disability prevalence with the relative density ratios needed
+for transport. The revised rule uses a $10^{-6}$ numerical floor and ESS at
+least 20, retains the original 0.01 threshold as a diagnostic, and applies the
+same rule to every fit. No observations are trimmed and no probabilities or
+weights are capped. The documented amendment is a substantive part of the
+analysis record rather than an undisclosed attempt to obtain favorable effects.
+
+Event-study intervals use HC1 under working individual independence. The optional
+AIPW procedure resamples individuals within the four cells and refits all
+nuisance models. It conditions on observed cell counts and propagates nuisance
+estimation within that model; it is not a CPS survey-design bootstrap or a
+randomized-policy interval. Household dependence, survey rotation, and common
+national shocks remain relevant [@bertrand2004]. The source documents possible
+matching and geographic identifiers, but they are not used to claim a verified
+survey design here. Large microdata samples do not create many independent
+national policy assignments.
+
+# Empirical results
+
+## Annual paths and the meaning of a negative gap
+
+The raw trajectories distinguish absolute employment levels from relative
+changes. For example, disabled women aged 40--58 averaged
+`r fmt(mean_at("female","old",1987))` weeks in 1987 and
+`r fmt(mean_at("female","old",1996))` in 1996. Their main standardized gap
+contrast is nevertheless negative because the comparison is relative to the
+other group's change and uses a common covariate target. Describing every
+negative coefficient as an absolute loss of disabled employment would therefore
+misstate the evidence.
+
+```{r}
+#| label: annual-means
+#| fig-cap: "Weighted annual weeks worked by observed disability group. Years refer to the retrospective outcome, not the survey interview."
+#| fig-width: 8
+#| fig-height: 4.8
+if (!is.null(descriptives)) {
+  groups <- unique(descriptives[c("sex", "age_sample")])
+  old_par <- par(mfrow = c(ceiling(nrow(groups) / 2), 2), mar = c(4, 4, 3, 1))
+  for (j in seq_len(nrow(groups))) {
+    z <- subset(descriptives, sex == groups$sex[j] & age_sample == groups$age_sample[j])
+    y_range <- range(z$mean_weeks, finite = TRUE)
+    plot(range(z$outcome_year), y_range, type = "n", xlab = "Outcome year",
+         ylab = "Mean weeks", main = group_label(groups$sex[j], groups$age_sample[j]))
+    for (g in c(0, 1)) {
+      zz <- z[z$disabled == g, ]
+      zz <- zz[order(zz$outcome_year), ]
+      lines(zz$outcome_year, zz$mean_weeks, type = "b", pch = 16 + g,
+            col = c("#245571", "#A34731")[g + 1], lty = g + 1)
+    }
+    abline(v = c(1990, 1992, 1994), col = "grey75", lty = 3)
+    legend("bottomleft", c("No reported disability", "Reported disability"),
+           col = c("#245571", "#A34731"), lty = 1:2, pch = 16:17, bty = "n", cex = .7)
+  }
+  par(old_par)
+}
+```
+
+The annual adjusted contrasts vary across strata and years. Their pointwise
+HC1 intervals are displayed as working sampling summaries, not proof of a
+policy assignment mechanism. Pre-period behavior is not uniformly flat: the
+original Table 2 itself reports a positive young-male 1989 interaction relative
+to 1987. A favorable pretest cannot establish the unobserved post-period
+counterfactual, and the full path is more informative than selected significant
+years [@roth2022].
+
+```{r}
+#| label: event-study-figure
+#| fig-cap: "Adjusted annual disability-gap changes in weeks worked, relative to outcome year 1989. Intervals use HC1 standard errors under working individual independence; they are not survey-design or randomized-policy uncertainty."
+#| fig-width: 8
+#| fig-height: 4.8
+if (!is.null(event_study) && any(event_study$outcome == "weeks")) {
+  es <- subset(event_study, outcome == "weeks")
+  groups <- unique(es[c("sex", "age_sample")])
+  old_par <- par(mfrow = c(ceiling(nrow(groups) / 2), 2), mar = c(4, 4, 3, 1))
+  for (j in seq_len(nrow(groups))) {
+    z <- subset(es, sex == groups$sex[j] & age_sample == groups$age_sample[j])
+    if (!1989 %in% z$year) {
+      ref <- z[1,,drop=FALSE]; ref$year <- 1989; ref$estimate <- 0
+      ref$conf_low <- 0; ref$conf_high <- 0; z <- rbind(z,ref)
+    }
+    z <- z[order(z$year), ]
+    plot(z$year, z$estimate, type = "b", pch = 19,
+         ylim = range(c(z$conf_low, z$conf_high, 0), finite = TRUE),
+         xlab = "Outcome year", ylab = "Change in gap (weeks)",
+         main = group_label(groups$sex[j], groups$age_sample[j]), col = "#245571")
+    segments(z$year, z$conf_low, z$year, z$conf_high, col = "#245571")
+    abline(h = 0, col = "grey50", lty = 2)
+    abline(v = c(1990, 1992, 1994), col = "grey75", lty = 3)
+  }
+  par(old_par)
+}
+```
+
+## Pooled standardized contrasts
+
+```{r}
+#| label: main-results-table
+#| results: asis
+z <- extension[extension$window=="main",,drop=FALSE]
+z$method <- method_label(z$method)
+z$estimate <- scale_outcome(z$estimate,z$outcome)
+w <- reshape(z[c("sex","age_sample","outcome","method","estimate")],idvar=c("sex","age_sample","outcome"),timevar="method",direction="wide")
+w <- ordered(w)
+display <- data.frame(Group=group_label(w$sex,w$age_sample),Outcome=outcome_label(w$outcome),DID=w$estimate.DID,RA=w$estimate.RA,IPW=w$estimate.IPW,AIPW=w$estimate.AIPW)
+show_table(display,"Main-window employment contrasts: 1987–1989 versus 1993–1996. Any-work results are percentage points. RA/IPW/AIPW share the disabled-post target; raw DID averages each observed cell's own distribution.",digits=2)
+```
+
+All four main AIPW weeks contrasts are negative. Younger women have the largest
+magnitude (`r fmt(value("female","young"))` weeks), followed by younger men
+(`r fmt(value("male","young"))`), older women
+(`r fmt(value("female","old"))`), and older men
+(`r fmt(value("male","old"))`). The corresponding any-work contrasts range
+from `r fmt(min(100*main_aipw$estimate[main_aipw$outcome=="worked_any"]))` to
+`r fmt(max(100*main_aipw$estimate[main_aipw$outcome=="worked_any"]))`
+percentage points. Agreement among RA, IPW, and AIPW is close in the primary
+specification. It indicates limited sensitivity among these particular
+parametric adjustments, not that the identifying assumptions have been tested.
+
+Standardization makes the younger-male weeks contrast less negative than raw
+DID: `r fmt(value("male","young",method="unadjusted_did"))` versus
+`r fmt(value("male","young"))`. This difference is consistent with a role for
+observed composition. The older-female negative pooled contrast is not a direct
+refutation of the original paper's overall interpretation: the target, pre
+window, pooling, and covariance convention differ, while the reconstructed
+annual Table 2 includes negative older-female estimates in later years.
+
+```{r}
+#| label: bootstrap-results
+#| results: asis
+if (is.null(bootstrap)) {
+  cat("**Working uncertainty is pending:** the full-refit bootstrap has not yet produced output in this render. The main AIPW table contains point estimates only.\n")
+} else {
+  z <- ordered(bootstrap[bootstrap$window=="main" & is_aipw(bootstrap$method),,drop=FALSE])
+  est <- scale_outcome(z$estimate,z$outcome)
+  lo <- scale_outcome(z$conf_low,z$outcome);hi <- scale_outcome(z$conf_high,z$outcome)
+  display <- data.frame(Group=group_label(z$sex,z$age_sample),Outcome=outcome_label(z$outcome),Estimate=fmt(est),`Working 95% interval`=ifelse(is.finite(lo)&is.finite(hi),paste0("[",fmt(lo),", ",fmt(hi),"]"),"Unavailable"),`Successful/requested`=paste0(z$n_success,"/",z$n_requested),check.names=FALSE)
+  show_table(display,"Main AIPW full-refit, cell-stratified individual-bootstrap intervals. These condition on the working independence model, not the CPS design or policy assignment.")
+}
+```
+
+```{r}
+#| label: bootstrap-interpretation
+#| results: asis
+if (!is.null(bootstrap)) {
+  z <- bootstrap[bootstrap$window=="main" & is_aipw(bootstrap$method),,drop=FALSE]
+  completed <- sum(z$n_success)
+  negative <- sum(is.finite(z$conf_high) & z$conf_high < 0)
+  cat(sprintf("The executed run completed %s full refits across the eight main group/outcome analyses; %s of the eight working percentile intervals lie wholly below zero. This describes uncertainty under cell-stratified individual resampling. It does not establish an equivalent probability statement about the policy effect under national shocks, endogenous classification, or a different sampling design. The larger young-female point estimate is also not, by itself, a tested difference between demographic groups.\n\n",count(completed),negative))
+  cat("With 199 draws per analysis, each percentile endpoint is determined by a small number of tail draws. The fixed seeds make the calculation reproducible, but do not eliminate Monte Carlo error. The intervals are therefore reported as working uncertainty summaries rather than precise publication-grade tail probabilities. More bootstrap draws could stabilize those endpoints; they would not address the more consequential identification uncertainties. No bootstrap intervals were computed for the placebo, threshold, or richer-adjustment contrasts, so their apparent differences are interpreted descriptively.\n")
+}
+```
+
+## Support and balance
+
+The support diagnostics give little indication that the primary estimates are
+driven by a few extremely weighted observations. Across main-window source
+cells, normalized covariate-density ratios range from
+`r fmt(min(main_weeks(overlap)$density_ratio_min),3)` to
+`r fmt(max(main_weeks(overlap)$density_ratio_max),3)`, and transport ESS is at
+least `r count(round(min(main_weeks(overlap)$transport_ess)))`. The original
+0.01 joint-probability flag affects only small target-weight shares in the
+younger strata. These facts explain the numerical-floor amendment; they do not
+establish that unmeasured health or reporting differences are balanced.
+
+```{r}
+#| label: diagnostics-table
+#| results: asis
+ov <- main_weeks(overlap);bl <- main_weeks(balance)
+groups <- unique(ordered(ov)[c("sex","age_sample")])
+rows <- lapply(seq_len(nrow(groups)),function(j){
+ a <- subset(ov,sex==groups$sex[j]&age_sample==groups$age_sample[j]);b <- subset(bl,sex==groups$sex[j]&age_sample==groups$age_sample[j])
+ data.frame(Group=group_label(groups$sex[j],groups$age_sample[j]),`Min. ESS`=round(min(a$transport_ess)),`Max. share (%)`=100*max(a$max_transport_weight_share),`Max. SMD before`=max(abs(b$smd_before),na.rm=TRUE),`Max. SMD after`=max(abs(b$smd_after),na.rm=TRUE),`Target flag (%)`=100*max(a$target_probability_below_001_share),check.names=FALSE)
+})
+diagnostics <- do.call(rbind,rows)
+show_table(diagnostics,"Main weeks-worked diagnostics. SMD maxima span modeled covariates and source cells. The target flag is the largest weighted share with a fitted joint-cell probability below 0.01; it is not trimmed.",digits=3)
+```
+
+Weighting substantially reduces the largest modeled-covariate standardized
+differences, from `r fmt(min(diagnostics[["Max. SMD before"]]),3)`--`r fmt(max(diagnostics[["Max. SMD before"]]),3)` before transport to at most `r fmt(max(diagnostics[["Max. SMD after"]]),4)` afterward. This is evidence that the
+estimated transport weights accomplish their observed-covariate objective.
+It cannot assess balance in unmeasured severity, recovery trajectories, or
+reporting propensities. Constant target covariates have undefined SMDs and
+remain marked in the detailed diagnostics rather than counted as perfect balance.
+
+# Robustness and extensions
+
+## Timing, richer adjustment, and a pre-policy placebo
+
+```{r}
+#| label: robustness-table
+#| results: asis
+rows <- lapply(seq_len(nrow(main_aipw)),function(j){
+ a <- main_aipw[j,];s <- a$sex;g <- a$age_sample;o <- a$outcome
+ r <- subset(rich,sex==s & age_sample==g & outcome==o & window=="main" & covariate_set=="rich" & is_aipw(method))
+ stopifnot(nrow(r)==1)
+ data.frame(Group=group_label(s,g),Outcome=outcome_label(o),Main=scale_outcome(a$estimate,o),Later=scale_outcome(value(s,g,o,"later_coverage"),o),`Broader pre`=scale_outcome(value(s,g,o,"broader_pre"),o),Richer=scale_outcome(r$estimate,o),Placebo=scale_outcome(value(s,g,o,"pre_policy",placebo),o),check.names=FALSE)
+})
+show_table(do.call(rbind,rows),"AIPW specification comparisons. Later: post 1995–1996; broader pre: 1987–1991; richer: education and region added on the same sample; placebo: 1987 versus 1988–1989. Any-work units are percentage points. These contrasts do not all have identical period/target populations.",digits=2)
+```
+
+The main signs persist across the alternative post-policy windows and richer
+adjustment, but their magnitudes vary. Older men are particularly sensitive to richer adjustment:
+the main weeks estimate changes from `r fmt(value("male","old"))` to
+`r fmt(subset(rich,sex=="male"&age_sample=="old"&outcome=="weeks"&covariate_set=="rich"&is_aipw(method))$estimate)`.
+There is no covariate-completeness sample loss in that comparison. For older
+women, restricting the post window to 1995--1996 produces a more negative
+contrast, whereas broadening the pre window attenuates it. Different time
+windows change both exposure duration and represented populations; they are
+not interchangeable estimates of a single immutable treatment effect.
+
+The placebo uses 1987 versus 1988--1989, before ADA passage. Its weeks contrasts
+are `r fmt(value("male","young",window="pre_policy",table=placebo))` for
+men 21--39 and `r fmt(value("male","old",window="pre_policy",table=placebo))`
+for men 40--58, with smaller magnitudes for women. The older-male placebo is
+substantial relative to that group's main contrast. These point estimates
+caution against a blanket claim of flat pre-policy trends, but no placebo
+confidence intervals have been estimated here. A small placebo would likewise
+not prove later parallel trends. Richer adjustment can address observed
+composition while adding assumptions about contemporaneous education and
+location; it is not automatically causally preferable.
+
+## Where in the distribution do changes appear?
+
+For $k=0,13,26,39,51$, the outcome $1\{\mathrm{weeks}\leq k\}$ is standardized
+using the same design. Among younger men, the largest changes are at zero and
+13 weeks, while the contrast near full-year work is much smaller. Younger women
+show positive cumulative-probability contrasts throughout the displayed range.
+Older women's pattern is more spread across thresholds. These profiles indicate
+that a mean gap alone does not describe all observed distributional changes.
+
+```{r}
+#| label: distribution-results
+#| fig-cap: "Main-window AIPW cumulative-probability contrasts at declared weeks-worked thresholds. A positive value indicates a relative increase in the probability of being at or below the threshold under the standardized contrast. These are not quantile treatment effects."
+#| fig-width: 8
+#| fig-height: 4.8
+if (!is.null(distributional)) {
+  z <- distributional[is_aipw(distributional$method), , drop = FALSE]
+  groups <- unique(z[c("sex", "age_sample")])
+  if (nrow(groups)) {
+    old_par <- par(mfrow = c(ceiling(nrow(groups)/2),2), mar = c(4,4,3,1))
+    for (j in seq_len(nrow(groups))) {
+      a <- subset(z, sex == groups$sex[j] & age_sample == groups$age_sample[j])
+      a <- a[order(a$threshold),]
+      plot(a$threshold,a$estimate,type="b",pch=19,col="#245571",
+           ylim=range(c(a$estimate,0),finite=TRUE),
+           xlab="Weeks-worked threshold",ylab="Cumulative-probability contrast",
+           main=group_label(groups$sex[j],groups$age_sample[j]))
+      abline(h=0,lty=2,col="grey60")
+    }
+    par(old_par)
+  }
+}
+```
+
+A positive value means an increase in the standardized relative probability
+of being at or below that threshold. The zero threshold is the complement of
+any work, providing an internal coherence check. These are pointwise probability
+contrasts, not identified quantile treatment effects or a distribution of
+individual effects. Separate threshold models do not establish rank invariance,
+and no simultaneous distributional confidence band has been calculated.
+
+## Sensitivity to differential untreated trends
+
+Let $b$ denote an additional untreated annual change in the disabled-minus-
+comparison gap, and $Z_i=G_i(\mathrm{outcome\ year}_i-1987)$. Applying the same
+AIPW estimator to $Z$ on identical samples, covariates, and weights gives an
+effective trend loading $L=\widehat\theta(Z)$. Because the current outcome
+regressions are linear and cell probabilities do not depend on $Y$,
+
+$$
+\widehat\theta(Y-bZ)=\widehat\theta(Y)-bL,
+\qquad b_{\mathrm{zero}}=\widehat\theta(Y)/L \quad (L\ne0).
+$$
+
+This exact fitted-estimator loading is not assumed to equal a nominal difference
+between period midpoints. The declared grid is $[-1,1]$ weeks per year in 0.25
+increments; for any work it is $[-0.02,0.02]$ probability units per year in 0.005
+increments. The ranges are scenarios, not empirically justified bounds. They
+illustrate a particular linear violation and do not implement the general
+robustness inference studied by @rambachan2023.
+
+```{r}
+#| label: sensitivity-figure
+#| fig-cap: "Main-window AIPW contrasts under a declared linear differential-trend scenario for weeks worked. Lines use the exact fitted-estimator trend loading; they are not confidence bands or validated robustness bounds."
+#| fig-width: 8
+#| fig-height: 4.8
+z <- main_weeks(sensitivity)
+if (!is.null(z) && nrow(z)) {
+  z <- z[is_aipw(z$method), , drop = FALSE]
+  groups <- unique(z[c("sex", "age_sample")])
+  if (nrow(groups)) {
+    old_par <- par(mfrow = c(ceiling(nrow(groups) / 2), 2), mar = c(4, 4, 3, 1))
+    for (j in seq_len(nrow(groups))) {
+      a <- subset(z, sex == groups$sex[j] & age_sample == groups$age_sample[j])
+      a <- a[order(a$trend_bias), ]
+      plot(a$trend_bias, a$adjusted_estimate, type = "l", lwd = 2,
+           ylim = range(c(a$adjusted_estimate, 0), finite = TRUE),
+           xlab = "Differential trend (weeks per year)",
+           ylab = "Scenario-adjusted contrast (weeks)",
+           main = group_label(groups$sex[j], groups$age_sample[j]), col = "#245571")
+      abline(h = 0, v = 0, col = "grey60", lty = 2)
+    }
+    par(old_par)
+  }
+}
+```
+
+The weeks contrasts reach zero at additional negative untreated trends of
+`r fmt(abs(trend_main$zero_effect_slope[trend_main$sex=="male"&trend_main$age_sample=="young"]),3)`
+and `r fmt(abs(trend_main$zero_effect_slope[trend_main$sex=="male"&trend_main$age_sample=="old"]),3)`
+weeks per year for younger and older men, and
+`r fmt(abs(trend_main$zero_effect_slope[trend_main$sex=="female"&trend_main$age_sample=="young"]),3)`
+and `r fmt(abs(trend_main$zero_effect_slope[trend_main$sex=="female"&trend_main$age_sample=="old"]),3)`
+for younger and older women. These magnitudes help assess the strength of the
+counterfactual restriction, especially alongside the nonzero placebo patterns.
+They are not critical values or confidence limits, and pre-period changes do
+not prove how large future untreated trends could have been.
+
+# Discussion and conclusion
+
+The supplied extract supports a close reconstruction of selected source results
+and a reproducible extension, not a perfect reproduction of the original study.
+The unresolved source discrepancies are retained rather than eliminated through
+selective changes to targets, samples, or tolerances. The new common-target
+estimates show negative relative employment changes, largest among younger
+women, and strong agreement across primary RA/IPW/AIPW calculations. At the
+same time, richer adjustment, timing choices, and pre-policy contrasts show
+that the magnitude and interpretation remain design-dependent.
+
+Three distinctions limit a policy claim. First, observed disability is a report
+that can change with employment and health; it is not a fixed pre-policy
+assignment. Second, a nationwide disability-specific shock can violate parallel
+trends even when observed demographics balance and individual-sampling intervals
+are narrow. Third, the comparison group can experience policy spillovers, so a
+relative gap is not necessarily the effect on disabled workers alone. The
+original study's matched, benefit, firm-size, and state evidence addresses
+additional dimensions that this selected reconstruction does not reproduce.
+Our diagnostics should be read alongside, not as a replacement for, those designs.
+
+The empirical result is therefore a set of negative standardized employment-gap
+changes around the ADA, with explicit sensitivity to observed adjustment and
+counterfactual trends. It is consistent with an adverse relative policy effect
+under the identifying assumptions, but it does not separately identify
+accommodation costs, hiring responses, reporting shifts, or benefit behavior.
+Nor does a historical employment contrast constitute a complete welfare
+evaluation of a civil-rights law. The combination of numerical reconstruction,
+common-target estimation, and transparent limitations provides a firmer basis
+for assessing the evidence than either unqualified causal conclusions or a
+summary of the original paper alone.
+
+```{r}
+#| label: failures
+#| results: asis
+if (!is.null(failures)) show_table(failures,"Declared analyses with unresolved execution failures. These are not estimates of zero and remain part of the reporting record.")
+```
+
+{{< pagebreak >}}
+
+# References {.unnumbered}
+
+::: {#refs}
+:::

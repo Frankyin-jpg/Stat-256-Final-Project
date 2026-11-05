@@ -1,0 +1,620 @@
+---
+title: "Technical Appendix"
+subtitle: "Employment Protection and the Disability Employment Gap"
+bibliography: references.bib
+link-citations: true
+format:
+  html:
+    toc: true
+    number-sections: true
+    embed-resources: true
+    html-math-method: mathml
+  pdf:
+    documentclass: article
+    pdf-engine: pdflatex
+    latex-auto-install: false
+    toc: false
+    number-sections: true
+    fontsize: 11pt
+    geometry: margin=1in
+execute:
+  echo: false
+  warning: false
+  message: false
+  error: false
+---
+
+```{r}
+#| label: appendix-inputs
+root <- if (dir.exists("results") && dir.exists("R")) "." else ".."
+result_path <- function(name) file.path(root, "results", name)
+metadata_path <- result_path("run-metadata.rds")
+run_metadata <- if (file.exists(metadata_path)) readRDS(metadata_path) else list()
+empirical_input <- identical(run_metadata$data_kind, "empirical") &&
+  identical(run_metadata$mapping_status, "publication_and_source_labels_verified")
+read_empirical <- function(name, required) {
+  if (!empirical_input || !file.exists(result_path(name))) return(NULL)
+  x <- read.csv(result_path(name), stringsAsFactors = FALSE, check.names = FALSE)
+  if (!all(required %in% names(x))) stop("Appendix input lacks required fields: ", name)
+  if (!nrow(x)) return(NULL)
+  x
+}
+benchmarks <- read_empirical("replication_benchmarks.csv",
+  c("table", "sex", "age_sample", "outcome", "statistic", "year", "original_value", "reproduced_value", "tolerance", "passed"))
+extensions <- read_empirical("extension.csv", c("sex", "age_sample", "outcome", "window", "method", "estimate"))
+support <- read_empirical("overlap.csv", c("sex", "age_sample", "outcome", "window", "cell", "transport_ess", "min_probability_in_target", "target_probability_below_001_share", "density_ratio_min", "density_ratio_max", "max_transport_weight_share"))
+bootstrap <- read_empirical("bootstrap.csv", c("outcome", "method", "n_success", "n_requested", "intervals_available"))
+stratum_label <- function(sex, age) paste(ifelse(sex == "male", "Men", "Women"), ifelse(age == "young", "21–39", "40–58"))
+show_table <- function(x, caption, digits = 3) print(knitr::kable(x, caption = caption, digits = digits, row.names = FALSE))
+```
+
+This appendix documents the estimators, assumptions, executed comparisons, and
+verification procedures behind the accompanying paper. The acquired source is
+the repository author's GitHub release containing SAS data and a checked July
+2001 paper proof; it contains no original SAS analysis programs. Publication
+descriptions, source labels, and numerical checks support a reconstruction,
+with unresolved differences retained. This is not a claim of source-code
+equivalence or a verified complete acquisition of the linked Dataverse deposit.
+The potential-outcomes framework follows @ding2024. Software tests and numerical
+agreement establish different kinds of computational evidence; neither validates
+the causal identifying assumptions.
+
+# A common target for four repeated-cross-section cells
+
+Let $G\in\{0,1\}$ denote reported work-limiting disability, $T\in\{0,1\}$ the
+pre/post period, $X$ the selected covariates, and $Y$ an annual employment outcome.
+Write $A=(G,T)$ and abbreviate its four values by the **two-character cell
+labels** $00,01,10,11$, rather than the product $G\times T$. The target cell is
+$a^*=11$. Different people
+are observed across years, so the analysis never constructs an individual
+outcome change from unmatched records.
+
+Let $s_i>0$ be the analysis weight. Within each sex-by-age analysis sample,
+the pipeline divides the original survey weight by its year's total and then
+by the number of years in that period. Thus years have equal mass within a
+period, and the pre and post periods each have total mass one. Survey weights
+define the within-year population; this additional normalization declares the
+mixture of years. It does not create a panel or a survey-design variance estimator.
+The annual descriptive and event-study analyses retain the original relative
+survey weights instead.
+
+Use $E_s$ and $P_s$ for expectations and probabilities in this declared weighted
+population. Define
+$$
+q_a(x)=P_s(A=a\mid X=x),\qquad
+m_a(x)=E_s[Y\mid A=a,X=x],\qquad p_*=P_s(A=11).
+$$
+For every source cell, the common-target mean is
+$$
+\mu_a=E_s[m_a(X)\mid A=11].
+$$
+The target mean $\mu_{11}=E_s[Y\mid A=11]$ is observed. The statistical estimand is
+$$
+\theta=\mu_{11}-\mu_{10}-\mu_{01}+\mu_{00}.
+$$
+All adjusted methods use the same complete-case observations, period windows,
+covariates, and disabled-post target. The unadjusted DID is also reported, but
+its four raw means average over each cell's own covariate distribution; it is
+a descriptive benchmark rather than another estimator of exactly the same
+standardized functional when composition differs.
+
+## Transport, standardization, and augmentation
+
+Let $S_*=\sum_i s_i1(A_i=11)$ and
+$\widehat r_a(x)=\widehat q_{11}(x)/\widehat q_a(x)$. For a source cell
+$a\in\{00,01,10\}$, regression standardization is
+$$
+\widehat\mu_a^{\mathrm{RA}}
+=\frac{1}{S_*}\sum_i s_i1(A_i=11)\widehat m_a(X_i).
+$$
+The normalized IPW transported mean is
+$$
+\widehat\mu_a^{\mathrm{IPW}}
+=\frac{\sum_i s_i1(A_i=a)\widehat r_a(X_i)Y_i}
+        {\sum_i s_i1(A_i=a)\widehat r_a(X_i)}.
+$$
+The implemented augmented mean instead uses target-mass normalization in its
+residual correction:
+$$
+\widehat\mu_a^{\mathrm{AIPW}}
+=\widehat\mu_a^{\mathrm{RA}}
++\frac{1}{S_*}\sum_i s_i1(A_i=a)\widehat r_a(X_i)
+                       \{Y_i-\widehat m_a(X_i)\}.
+$$
+For $a=11$, use the weighted observed mean for all methods. Insert the four
+means into the same signed contrast to obtain each adjusted DID. The IPW and
+AIPW denominators deliberately differ: replacing $S_*$ by the transported
+source mass in the residual term produces a different finite-sample estimator.
+Multiplying every $s_i$ by a common positive constant leaves all these estimates
+unchanged.
+
+The initial nuisance models are a weighted multinomial logit for the four cell
+probabilities and separate weighted linear outcome models in the three source
+cells. The primary covariates are centered age, its square, and the historical
+recorded race categories, with analyses stratified by recorded sex and age
+range. The richer specification additionally adjusts for recorded education
+and region. These additional variables are not assumed automatically to be
+unaffected by policy. Neither model adjusts for benefits receipt, current
+employment, or another realized labor-market outcome as a baseline confounder.
+
+This construction is a common-target transport contrast. It is not presented
+as an implementation of the particular repeated-cross-section score in
+@santanna2020. That literature and the semiparametric DID framework of
+@abadie2005 motivate adjustment under explicit identifying assumptions;
+method names alone do not establish those assumptions.
+
+## Why the augmentation is doubly robust
+
+Suppose the fitted source outcome model and density ratio converge to
+$\widetilde m_a$ and $\widetilde r_a$, respectively. The population limit of
+the augmented source mean is
+$$
+\widetilde\mu_a
+=\frac{E_s[1(A=11)\widetilde m_a(X)]}{p_*}
++\frac{E_s[1(A=a)\widetilde r_a(X)
+                  \{Y-\widetilde m_a(X)\}]}{p_*}.
+$$
+Iterated expectation gives the bias identity
+$$
+\widetilde\mu_a-\mu_a
+=\frac{1}{p_*}E_s\!\left[
+\{q_{11}(X)-q_a(X)\widetilde r_a(X)\}
+\{\widetilde m_a(X)-m_a(X)\}\right].
+$$
+The bias vanishes if the source outcome model is correct or the density ratio
+is correct. For the full contrast, the condition must hold for **each** of the
+three source cells. Merely fitting both models does not guarantee that either
+is correct. Consistency also requires support, integrability, and suitable
+convergence conditions. Flexible models would require additional attention
+to overfitting, cross-fitting, and rates; the current parametric implementation
+does not claim those features.
+
+Double robustness concerns estimation of the defined observed-data functional.
+It does not make conditional parallel trends true, stabilize changing disability
+reporting, or turn a post-policy characteristic into a baseline covariate.
+
+# Conditions for a policy interpretation
+
+Let $G^*$ describe a stable, pre-policy disability group and let $Y_t(p)$ denote
+the outcome under policy regime $p\in\{0,1\}$. An ATT-like interpretation of the
+standardized contrast requires a link between observed $G$ and this stable
+group, as well as the following conditions.
+
+1. **Consistency and a defined exposure.** Recorded outcomes correspond to
+   the policy regime received, with an account of phased employer coverage
+   and partial exposure. The ADA is the intervention; disability itself is not.
+2. **No anticipation in the chosen pre window.** The pre outcomes represent
+   the no-policy regime. Passage, implementation, and a first full outcome
+   year must not be treated as interchangeable dates.
+3. **Conditional parallel untreated changes.** For relevant $x$,
+   $$
+   E[Y_1(0)-Y_0(0)\mid G^*=1,X=x]
+   =E[Y_1(0)-Y_0(0)\mid G^*=0,X=x].
+   $$
+   Repeated-cross-section sampling must permit identification of the two
+   period-specific conditional means for each stable group. The comparison
+   also needs a defensible restriction on spillovers or other policy effects
+   on the comparison group.
+4. **Stable composition and measurement.** Changes in disability reporting,
+   sample inclusion, measurement, or unobserved health must not independently
+   change the group contrast after adjustment. Conditional standardization
+   cannot correct unmeasured changes in who is counted as disabled.
+5. **Common support and appropriate covariates.** Every target covariate
+   pattern must be supported in all source cells. Covariates used to justify
+   identification must be predetermined or otherwise justified, rather than
+   chosen only because they improve prediction.
+
+Under these restrictions, the change in the comparison group's untreated
+outcomes supplies the missing change for the stable treated group. Without
+them, $\theta$ remains a standardized change in observed group disparities.
+Survey precision and agreement among RA, IPW, and AIPW cannot distinguish these
+interpretations by themselves. Pre-period event-study diagnostics are useful
+but have limited power, and selecting an analysis after a pre-trend test can
+distort inference [@roth2022].
+
+## Reporting endogeneity as a causal graph
+
+Consider predetermined characteristics $X_0$, underlying health $H_0$, policy
+$P$, annual employment $Y_t$, disability reported at a later interview
+$G_{t+1}$, and contemporaneous benefits receipt $B_{t+1}$. A plausible graph
+includes the following directed paths:
+$$
+\begin{aligned}
+&P\longrightarrow Y_t\longrightarrow G_{t+1},
+&&P\longrightarrow G_{t+1},\\
+&H_0\longrightarrow Y_t,
+&&H_0\longrightarrow G_{t+1},\\
+&X_0\longrightarrow H_0,
+&&X_0\longrightarrow Y_t,\\
+&P\longrightarrow B_{t+1},
+&&Y_t\longrightarrow B_{t+1}\longleftarrow H_0.
+\end{aligned}
+$$
+These edges describe threats to assess, not estimated causal relationships.
+Indexing employment before interview reporting avoids a simultaneous feedback
+cycle. The observed disability group can be a descendant of policy and
+employment. Conditioning on it can also select on the collider
+$P\rightarrow G_{t+1}\leftarrow H_0$. Benefits receipt is likewise an unsafe
+automatic control or sample restriction in this graph. Excluding recipients
+can select on employment and health rather than isolate a pure policy effect.
+
+An observed decline in disabled-group employment could therefore reflect
+changes in reporting or composition even if the policy's effect on any fixed
+person were zero. The contribution of this study is to make that possibility
+visible through timing, prevalence, composition, and sensitivity checks, not
+to claim that reweighting eliminates it.
+
+# Diagnostics, uncertainty, and resampling
+
+## Support and balance
+
+The initial software draft used 0.01 as a lower bound on fitted four-cell joint
+probabilities. Inspection of the acquired data showed that this guard conflated
+rare disability-cell prevalence with the covariate support required for
+transport. The amended empirical runner uses $10^{-6}$ as a numerical floor
+and retains an effective-sample-size minimum of 20. It reports the target-weight
+share below 0.01 rather than silently removing those observations. The same
+amended rule applies to every empirical stratum, window, outcome, and bootstrap
+refit; the generic function's default remains 0.01. The chronology, rationale,
+and diagnostic evidence are recorded in `docs/support-amendment.md`.
+
+For transported weights $v_i$, the reported
+quantity is $\operatorname{ESS}=(\sum_i v_i)^2/\sum_i v_i^2$; it is a weight
+concentration diagnostic, not the number of independent survey clusters.
+The maximum normalized weight share and cell sample counts accompany it.
+These thresholds are declared computational diagnostics, not universal
+criteria for causal validity. Failure stops that specification; the software
+does not silently clip probabilities or remove observations.
+
+To separate prevalence from relative covariate support, it also reports
+$$
+\rho_a(x)=\frac{q_{11}(x)}{q_a(x)}\frac{P_s(A=a)}{P_s(A=11)}
+=\frac{f_s(x\mid A=11)}{f_s(x\mid A=a)}.
+$$
+The fitted joint probabilities, density ratios, ESS, and maximum weight shares
+must be assessed together. None tests conditional parallel trends or stable
+disability reporting.
+
+Balance compares each donor cell with the same disabled-post target before
+and after transport. Standardized differences use the target population's
+weighted standard deviation for each model-matrix column. A target-constant
+column has an undefined standardized difference and is flagged rather than
+treated as perfectly balanced. Balance on included columns cannot demonstrate
+balance on unobserved health or validate the counterfactual trend.
+
+## Shared covariance and the meaning of uncertainty
+
+The four estimates share observations through the target distribution,
+multinomial model, and nuisance fitting. Their standard errors cannot be added
+as though four independent cell means were being combined. For illustration,
+with fixed correct nuisances and independent observations, let
+$d_*=E[s1(A=11)]$. A source-mean influence contribution takes the form
+$$
+\phi_a=\frac{s}{d_*}\left[
+1(A=11)\{m_a(X)-\mu_a\}
++1(A=a)r_a(X)\{Y-m_a(X)\}\right],
+$$
+while $\phi_{11}=s1(A=11)(Y-\mu_{11})/d_*$. The contrast contribution is
+$\phi_\theta=\phi_{11}-\phi_{10}-\phi_{01}+\phi_{00}$, whose variance includes
+all covariances. Estimated nuisance models and a complex sample design require
+additional justification; this display is not the implemented variance formula.
+
+The annual event-study intervals use HC1 under an individual-independence
+working model. They do not account automatically for CPS rotation, household
+dependence, the sample design, or a common national disability-specific shock.
+Serial dependence can seriously distort DID uncertainty [@bertrand2004].
+There is one national policy timeline, so a large number of survey respondents
+does not create many independent policy assignments. Neither a state-cluster
+standard error nor the individual bootstrap below can remove a confounding
+nationwide trend.
+
+## Implemented bootstrap algorithm
+
+For a fixed outcome, stratum, window, covariate specification, and complete-case
+sample, the optional bootstrap proceeds as follows:
+
+1. Fit the point estimator and retain the original analysis weights and the
+   observed cell counts $n_{00},n_{01},n_{10},n_{11}$.
+2. Within each cell independently, draw $n_a$ rows with replacement. Carry
+   each selected row's analysis weight with it. This conditions on the observed
+   four cell counts; it does not resample a CPS survey design.
+3. Refit the multinomial model and all three source outcome regressions on
+   the resampled observations. Recompute the observed target mean, adjustment
+   estimates, and support diagnostics. Resampling only precomputed treatment
+   effects or holding the fitted nuisances fixed would omit uncertainty.
+4. Repeat using the recorded seed. Save every replicate's status and any
+   failure reason. By default, **all requested replicates must succeed** before
+   bootstrap standard errors or intervals are reported. An explicitly relaxed
+   success requirement is labeled as inference conditional on successful
+   replicates, not silently substituted for the default.
+5. For an eligible run, report the replicate standard deviation and the 2.5th
+   and 97.5th percentiles using R's type-7 quantile convention. Runs with fewer
+   than 199 replicates are labeled exploratory. Even 199 replicates gives
+   limited tail resolution; more draws address Monte Carlo error, not a wrong
+   sampling or identification model.
+
+Reproducible parallel execution assigns a seed to each replicate before
+dispatch. The serial and parallel implementations therefore produce the same
+draws and results for a fixed seed. Multinomial fitting combines identical
+covariate/cell rows by summing their weights, an exact likelihood reduction;
+no respondent subsample replaces the declared empirical population.
+
+The main pipeline requests this procedure for the primary-window weeks-worked
+and any-work analyses in each of the four sex-by-age strata. The bootstrap
+conditions on the supplied period/year analysis weights rather than rebuilding
+their original survey totals in every draw. These intervals are therefore
+conditional sampling summaries. A final design-based analysis requires the
+actual archive's household/PSU/stratum information or appropriate replicate
+weights and a resampling method consistent with them.
+
+# Distributional and trend sensitivity extensions
+
+## Threshold outcomes are not quantile treatment effects
+
+For $k\in\{0,13,26,39,51\}$, define
+$Y_k=1(\mathrm{weeks}\leq k)$. The same four-cell method estimates
+$$
+\theta_k=F_{11}^*(k)-F_{10}^*(k)-F_{01}^*(k)+F_{00}^*(k),
+$$
+where $F_a^*(k)$ is the source cell's cumulative employment distribution
+standardized to the disabled-post target. At $k=0$, the outcome is no weeks
+worked; higher thresholds examine changes in the share with relatively little
+annual employment. A positive $\theta_k$ is an increase in the cumulative
+probability contrast, not an increase in weeks worked. Since the samples are
+the same and the estimator is linear in the outcome, the zero-weeks contrast
+is the negative of the any-work contrast, up to numerical precision.
+
+A causal distributional interpretation requires parallel trends for the
+threshold indicators, which does not follow from parallel trends in mean
+weeks. These contrasts neither identify individual rank preservation nor
+quantile treatment effects. The implied counterfactual CDF need not satisfy
+range and monotonicity restrictions under arbitrary data and models; it should
+not be inverted mechanically. Thresholds are prespecified, and a collection
+of pointwise comparisons must not be described as a simultaneous confidence
+band. The current distributional output is a diagnostic point-estimate
+extension, not a quantified causal distributional claim.
+
+## Exact linear loading for the implemented bias curve
+
+Let $\mathcal L(Y)$ denote the fitted AIPW contrast for fixed observations,
+weights, covariates, and cell-probability estimates. Because the source outcome
+fits are weighted linear regressions with fixed design matrices, this estimator
+is linear in $Y$. Define
+$$
+H_i=G_i(\mathrm{outcome\_year}_i-1987),\qquad
+L=\mathcal L(H),\qquad \widehat\theta=\mathcal L(Y).
+$$
+For a hypothetical differential untreated drift of $b$ outcome units per year,
+the outcome perturbation $Y_i^{(b)}=Y_i-bH_i$ gives the exact fitted-model identity
+$$
+\mathcal L(Y^{(b)})=\widehat\theta-bL.
+$$
+The pipeline computes $L$ by running the **same estimator** on $H$. It is not
+replaced by the arithmetic difference between mean pre and post years: common
+target standardization and estimated residual corrections can change that
+loading. The output column named `year_separation` stores this estimator
+loading. With $L\neq0$, the drift that moves the point contrast to zero is
+$b_0=\widehat\theta/L$; it is undefined when the loading vanishes.
+
+The declared grid is $b=-1,-0.75,\ldots,1$ weeks per year for weeks worked and
+$b=-0.02,-0.015,\ldots,0.02$ probability units per year for any work. Applying
+this algebra to a binary outcome is a bias sensitivity calculation, not a
+claim that every perturbed value is a realizable binary observation. Holding
+the sample and nuisance designs fixed is essential to the identity. Tests
+compare the shortcut against direct outcome-perturbation refits.
+
+This is a one-dimensional, linear trend-bias model. It is not a general
+identification region, a simultaneous sensitivity interval, or an implementation
+of the robust trend restrictions in @rambachan2023. Its role is to put the
+counterfactual trend required to explain the point estimate on an interpretable
+scale. Sampling uncertainty and uncertainty about $b$ remain distinct.
+
+# Executed reconstruction and additional results
+
+## Scope of the numerical comparison
+
+The supplied SAS extract contains 971,058 records. Age eligibility retains
+759,771; excluding missing or zero `FNLWGT2` leaves 709,125 weighted estimation
+records. Table 1's printed observation counts refer to the raw age-eligible
+population, whereas its weighted means and the regressions use valid weights.
+Keeping these populations separate reconciles all 40 selected Table 1 counts
+and all eight Table 2 estimation counts. Original weight-construction programs
+are absent, so the precise historical reason for each excluded weight is not
+asserted.
+
+The reconstructed Table 2 no-trend model uses outcome-year 1987 as the reference,
+full categorical demographic controls, and year-by-demographic interactions.
+This differs from the extension's age-polynomial event-study model. Its
+conventional WLS covariance is reported as the reconstruction convention;
+the extension's HC1 and bootstrap uncertainty have different interpretations.
+The benchmark source is the supplied July 2001 proof, not an independently
+retrieved final printing. Proof/PDF pages 13–14 contain Table 1, and page 17
+contains Table 2.
+
+```{r}
+#| label: benchmark-summary
+#| results: asis
+if (is.null(benchmarks)) {
+  cat("**Executed benchmark comparisons are unavailable in this render.**\n")
+} else {
+  if (anyNA(benchmarks$passed) || any(!is.finite(as.matrix(benchmarks[c("original_value", "reproduced_value", "tolerance")])))) stop("Invalid empirical benchmark values")
+  matched <- sum(benchmarks$passed)
+  cat(sprintf("The executed comparison matches **%d of %d selected entries** at their declared printed-precision tolerances. **%d discrepancies remain**; they are retained below rather than relabeled as passes. The selection covers Table 1 age/weekly-employment means and counts, and Table 2 no-trend employment/log-wage coefficients, standard errors, and counts. It does not cover every original table or the trend columns.\n", matched, nrow(benchmarks), nrow(benchmarks)-matched))
+}
+```
+
+```{r}
+#| label: benchmark-discrepancies
+#| results: asis
+if (!is.null(benchmarks)) {
+  x <- benchmarks[!benchmarks$passed, ]
+  if (nrow(x)) {
+    short_stratum <- paste0(ifelse(x$sex == "male", "M", "F"), ifelse(x$age_sample == "young", "21–39", "40–58"))
+    label <- paste(sub("Table ", "T", x$table), short_stratum,
+      ifelse(x$outcome == "weeks", "weeks", "log wage"),
+      ifelse(x$statistic == "std_error", "SE", ifelse(x$statistic == "coefficient", "coef.", "mean")))
+    show_table(data.frame(Comparison = label, Year = x$year, Printed = x$original_value,
+      Reconstructed = x$reproduced_value, Tolerance = x$tolerance),
+      "All retained discrepancies. T1 uses survey years; T2 uses outcome years. M/F denote recorded male/female strata.", digits = 6)
+  }
+}
+```
+
+`docs/replication-audit.md` records the complete comparison rules, source
+transcription, and independent checks. All 36 selected Table 2 employment
+coefficients match the source precision. The disputed older-male 1988 weeks
+standard error and young-female 1992 wage coefficient were also reproduced by
+independent `stats::lm` fits on the actual samples. These checks make a
+package-specific numerical error less likely, but do not establish that the
+proof's values are typographical errors. The differences remain unresolved
+without original programs, execution logs, or another verified source version.
+
+## All prespecified period windows
+
+The following table reports the AIPW contrast for every declared stratum and
+period window. It complements the main paper's method comparison. The bootstrap
+applies to the primary window; alternative windows here are point comparisons.
+Probability
+contrasts are multiplied by 100 to express percentage points. These point
+contrasts do not become policy effects solely because several windows have
+the same sign; older women's pre-period trend remains a particularly relevant
+counterexample to that argument.
+
+```{r}
+#| label: all-window-aipw
+#| results: asis
+if (is.null(extensions)) {
+  cat("**Executed extension estimates are unavailable in this render.**\n")
+} else {
+  x <- extensions[extensions$method == "aipw_standardized_did", ]
+  w <- x[x$outcome == "weeks", c("sex", "age_sample", "window", "estimate")]
+  p <- x[x$outcome == "worked_any", c("sex", "age_sample", "window", "estimate")]
+  names(w)[4] <- "weeks"; names(p)[4] <- "probability"
+  x <- merge(w, p, by = c("sex", "age_sample", "window"), all = TRUE)
+  x <- x[order(factor(x$sex, levels=c("male", "female")), factor(x$age_sample, levels=c("young", "old")), factor(x$window, levels=c("main", "later_coverage", "broader_pre"))), ]
+  period_labels <- c(main="1987–89 / 1993–96", later_coverage="1987–89 / 1995–96", broader_pre="1987–91 / 1993–96")
+  show_table(data.frame(Stratum = stratum_label(x$sex,x$age_sample),
+    `Pre / post years` = unname(period_labels[x$window]), Weeks = x$weeks,
+    `Any work (pp)` = 100*x$probability, check.names=FALSE),
+    "AIPW standardized group-disparity changes across all prespecified outcome-year windows.")
+}
+```
+
+## Observed support in the primary window
+
+```{r}
+#| label: support-evidence
+#| results: asis
+if (!is.null(support)) {
+  x <- support[support$window == "main" & support$outcome == "weeks", ]
+  split_x <- split(x, interaction(x$sex, x$age_sample, drop=TRUE))
+  table <- do.call(rbind, lapply(split_x, function(z) data.frame(
+    Stratum = stratum_label(z$sex[1],z$age_sample[1]),
+    `Min. q` = min(z$min_probability_in_target),
+    `Flagged (%)` = 100*max(z$target_probability_below_001_share),
+    `Min. ESS` = as.integer(round(min(z$transport_ess))),
+    `Ratio range` = sprintf("%.2f–%.2f",min(z$density_ratio_min),max(z$density_ratio_max)),
+    `Max. w (%)` = 100*max(z$max_transport_weight_share),check.names=FALSE)))
+  table <- table[match(c("Men 21–39","Men 40–58","Women 21–39","Women 40–58"),table$Stratum), ]
+  show_table(table,"Primary-window support diagnostics across the four cells within each stratum.",digits=3)
+}
+```
+
+“Flagged” is the largest, across source cells, target-weight share for which
+that cell's joint probability is below the initial 0.01 guard; it is not a
+count of excluded observations. The density-ratio range removes the marginal
+cell-prevalence factor. The full population is retained under the documented
+amendment, with no trimming or probability clipping. The amendment is disclosed
+because replacing an initial rule after seeing the source is a design decision,
+even when it is motivated by support diagnostics rather than effect estimates.
+
+```{r}
+#| label: bootstrap-status
+#| results: asis
+if (is.null(bootstrap)) {
+  cat("**Bootstrap execution is not yet attached to this render.** Point estimates above must not be read as completed inference.\n")
+} else {
+  b <- bootstrap[bootstrap$method == "aipw_standardized_did", ]
+  if (nrow(b) && all(b$intervals_available) && all(b$n_success == b$n_requested)) {
+    draw_range <- if (min(b$n_success) == max(b$n_success)) as.character(min(b$n_success)) else sprintf("%d–%d", min(b$n_success), max(b$n_success))
+    cat(sprintf("The saved primary-window bootstrap summaries contain %d stratum/outcome AIPW analyses, with %s successful draws each and all requested draws successful. Their intervals remain conditional sampling summaries under the algorithm above, not CPS design-based or national-policy uncertainty.\n", nrow(b), draw_range))
+  } else cat("**Bootstrap summaries are partial or have unavailable intervals.** The saved failures and counts must be reviewed before interpreting uncertainty.\n")
+}
+```
+
+# Source verification and reproducibility
+
+## Mapping verification matrix
+
+The matrix distinguishes verified source/publication evidence from remaining
+limits. The source audit is hash-bound in `data/source-verification.json` and
+described in `docs/source-audit.md`. Numerical comparison is a separate
+verification layer; neither audit supplies the missing original programs.
+
+| Source item | Current implemented rule | Evidence and remaining limit |
+| --- | --- | --- |
+| File and format | Supplied SAS file, loaded with Haven | Archive inventory and hashes checked; no original programs or complete-Dataverse claim |
+| Year | Survey year 1988–1997; outcome year one less | Source labels and proof pp. 11–12 agree |
+| Population | Survey-age 21–58; strata at 40 | Source ranges and all 48 selected population/estimation counts agree |
+| Disability | Binary `DISABL1` | Equals `DIS_HP==1` in the supplied records; interview timing and legal coverage remain distinct |
+| Weights | Positive `FNLWGT2` / 100 | Counts and numerical agreement support mapping; original reweighting code and reasons for each missing/zero weight unavailable |
+| Employment | `WKSWORK` 0–52; zeros retained | Source label specifies last year; no missing weeks in the supplied file |
+| Race | Source codes 3–5 pooled | Matches historical three-category specification; coding does not establish group comparability over time |
+| Schooling and region | Three schooling groups, nine divisions | Flags verified complete/exclusive; categories reconcile the historical 162-cell definition |
+| Earnings | Positive wages/weeks; explicit legacy trimming | All four wage-model counts agree; original CPI and selection programming cannot be inspected |
+| Benchmarks | Independently transcribed proof targets | 272 executed comparisons; discrepancies retained; final publisher printing not independently checked |
+
+: Source/publication verification and its remaining limits.
+
+Faithful replication additionally requires matching sample counts, weighted
+means, omitted categories, formulas, and variance calculations for explicitly
+selected original specifications [@acemoglu2001]. Modernized modeling choices
+must be reported as extensions. A match in coefficient signs is not a
+replication criterion.
+
+## Commands and artifact boundaries
+
+Run commands from the repository root after environment activation. The first
+block works without empirical input and validates software/report behavior:
+
+```bash
+source /workspace/stat256-environment/activate.sh
+cd /workspace/Stat-256-Final-Project
+make test
+quarto render --to html
+quarto render --to pdf
+```
+
+To retrieve the same supplied GitHub release archive:
+
+```bash
+make fetch
+```
+
+The source audit documents the available paper/data evidence and absent programs.
+The following interface runs the empirical pipeline on the verified SAS input:
+
+```bash
+Rscript scripts/run_analysis.R /absolute/path/to/marcps_w.sas7bdat \
+  --bootstrap 199 --seed 256
+quarto render --to html
+quarto render --to pdf
+```
+
+The downloader records source metadata and checksums; originals remain under
+`data/raw/`. Derived observations and analysis artifacts are generated in
+`data/derived/` and `results/`. The paper and this appendix render to
+`_output/report/` as separate HTML and PDF documents. The software test fixtures
+live in temporary directories and must never populate research results.
+Retain run metadata, session information, source hashes, version-control state,
+and bootstrap success/failure records with any released empirical output.
+
+`make analyze` runs the point estimates and diagnostics; `make analyze-full`
+adds the requested bootstrap. If a core or extension check fails, diagnose it
+and disclose the failed specification rather than substituting another
+window, trimming rule, or synthetic input. Publication requires source
+verification, a completed replication comparison that retains any discrepancies,
+executed empirical outputs, examined diagnostics, and interpretation written
+from those outputs.
+
+# References {.unnumbered}

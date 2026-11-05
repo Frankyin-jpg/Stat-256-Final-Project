@@ -1,0 +1,27 @@
+{
+  "complete": true,
+  "completeness_scope": "Single supplied release archive, not the complete original deposit",
+  "doi": "doi:10.7910/DVN/WCNKB1",
+  "doi_status": "Referenced by historical repository; equality to complete Dataverse deposit not independently verified",
+  "files": [
+    {
+      "checksum": {
+        "type": "SHA-256",
+        "value": "a7479a211d034f8fb9209c03435b9be5742f690924c5880cd1a855d5040bc0e4"
+      },
+      "checksum_origin": "pinned_initial_supplied_release_download",
+      "id": "github-release",
+      "path": "originals/github-release/data_and_paper.zip",
+      "remote_checksum_verified": true,
+      "restricted": false,
+      "sha256": "a7479a211d034f8fb9209c03435b9be5742f690924c5880cd1a855d5040bc0e4",
+      "size": 91436493,
+      "source_name": "data_and_paper.zip",
+      "url": "https://github.com/Frankyin-jpg/Stat-256-Final-Project/releases/download/replication-data-v1/data_and_paper.zip"
+    }
+  ],
+  "original_programs_available": false,
+  "schema_version": 1,
+  "source_type": "github_release_mirror",
+  "source_url": "https://github.com/Frankyin-jpg/Stat-256-Final-Project/releases/download/replication-data-v1/data_and_paper.zip"
+}

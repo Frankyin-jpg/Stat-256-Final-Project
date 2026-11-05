@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "mapping_status": "publication_and_source_labels_verified",
+  "data_kind": "empirical",
+  "input_path": "data/raw/extracted/github-release/data_and_paper/marcps_w.sas7bdat",
+  "input_md5": "98b2459432541e95839e4b19d720f125",
+  "input_sha256": "1f5a66450f5307dfc8ed3523abdd0777cb1c13a77d81fee3f6fa152db2560a6d",
+  "raw_manifest_sha256": "4d8f1c37a29f8db55708dfde880fafa4ae55cf5bf81c5755494987e32ec2b63d",
+  "archive_sha256": "a7479a211d034f8fb9209c03435b9be5742f690924c5880cd1a855d5040bc0e4",
+  "original_programs_available": false,
+  "provided_paper_version": {
+    "title": "Consequences of Employment Protection? The Case of the Americans with Disabilities Act",
+    "authors": [
+      "Daron Acemoglu",
+      "Joshua D. Angrist"
+    ],
+    "version": "Checked JPE v109n5 proof, Monday Jul 02 2001 09:44 AM, production identifier 019509 VML",
+    "sha256": "62dbb8a88e1a9eefcaca2807fa294f276d17ba7215718cb9a333b80ed1f1c5ec"
+  },
+  "verification_basis": {
+    "source_labels": "YEAR is year of survey; WKSWORK is weeks worked last year; DISABL1 exactly equals DIS_HP==1 in all 971058 supplied records; education flags are exhaustive and mutually exclusive.",
+    "publication_timing": "Proof pp11–12 state outcomes1987–1996 from March1988–1997; Table1 andFigures1,4,5 use survey dates; other tables/figures use observation year=survey year−1.",
+    "population": "Ages21–58; FNLWGT2 strictlypositive;709125 retained records. All retained outcome/covariate fields used here are observed.",
+    "weights": "FNLWGT2 selected consistently with exact published sample counts and tested estimates; source has adjusted weights varying from FNLWGT in1990–1992. Division by100 only normalizes scale; original weight-construction code is unavailable.",
+    "sample_counts_reference": "Table2, supplied checked proof p17; exact all four weeks and all four wage sample counts independently visually checked.",
+    "sample_counts": [
+      {
+        "sex": "male",
+        "age_sample": "young",
+        "weeks": 193317,
+        "wages": 167974
+      },
+      {
+        "sex": "female",
+        "age_sample": "young",
+        "weeks": 211910,
+        "wages": 157688
+      },
+      {
+        "sex": "male",
+        "age_sample": "old",
+        "weeks": 146309,
+        "wages": 116665
+      },
+      {
+        "sex": "female",
+        "age_sample": "old",
+        "weeks": 157589,
+        "wages": 109082
+      }
+    ],
+    "limitations": [
+      "No original SAS programs are present; this is not source-code equivalence verification.",
+      "The supplied archive is an user-provided GitHub release, not a verified complete Dataverse acquisition.",
+      "Matching sample sizes does not by itself verify every historical estimate; independent numerical benchmarks are stored separately.",
+      "The legacy CPI/positive-wage/trimming construction matches all eight outcome sample counts but its original programming cannot be inspected."
+    ]
+  }
+}

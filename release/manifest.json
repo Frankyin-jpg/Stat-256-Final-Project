@@ -1,0 +1,775 @@
+{
+  "files": [
+    {
+      "category": "project",
+      "git_lfs_required": false,
+      "path": "LICENSE",
+      "sha256": "10a9d2e3f31f2b7d4c779e4a03eef650270b362335b3c79b1ee86e17490f243e",
+      "size": 1069,
+      "source": "LICENSE"
+    },
+    {
+      "category": "project",
+      "git_lfs_required": false,
+      "path": "Makefile",
+      "sha256": "1862f4b5584ebca3e16f4760103b0a63dc22bfc7825de359601ff4e63896b59d",
+      "size": 860,
+      "source": "Makefile"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "R/bootstrap_did.R",
+      "sha256": "7edb207d6566ad27b4bb5dbc0edb7bba0b29a92e6f8c7390063fd8359522e1bf",
+      "size": 8915,
+      "source": "R/bootstrap_did.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "R/estimate_did.R",
+      "sha256": "020c50c6e124f7e2e98cf0aa1878ddbc1efcfb016f03a9b707a9ad9e7b461e84",
+      "size": 11663,
+      "source": "R/estimate_did.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "R/event_study.R",
+      "sha256": "7f84834fc6ee9dc1f5f07f287782dcfc9b54e7ec440be4004a40289d2571a830",
+      "size": 3679,
+      "source": "R/event_study.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "R/export_tables.R",
+      "sha256": "c4f60bf4a7102e9c83c96f6f9e5638707d9eeb1d6263590d1d01925189811e5a",
+      "size": 2999,
+      "source": "R/export_tables.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "R/extended_analysis.R",
+      "sha256": "ea905affa3faa41a529d4615c66bbf5ba3450d5f68db5c50ebd93d9082e2d4ba",
+      "size": 5983,
+      "source": "R/extended_analysis.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "R/prepare_data.R",
+      "sha256": "1358f727f9106a2ddb11b3de0c1f8df754c06cd6676fd9ebcf2db659ff011f24",
+      "size": 8285,
+      "source": "R/prepare_data.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "R/replication.R",
+      "sha256": "cac3f5ee28ea38d00430dfe8617824230ea00ab92b0a08101e265b86aa7c03b5",
+      "size": 13762,
+      "source": "R/replication.R"
+    },
+    {
+      "category": "project",
+      "git_lfs_required": false,
+      "path": "README.md",
+      "sha256": "a51b6c5285ef3a8598fb0e48a4b9ad73c61668b02fbaf73fe1082af7108c93b8",
+      "size": 8379,
+      "source": "README.md"
+    },
+    {
+      "category": "project",
+      "git_lfs_required": false,
+      "path": "_quarto.yml",
+      "sha256": "b7bea496d24bf0bfb537eff424b1855c05a5413c38c5eaa97e38bd468c787384",
+      "size": 185,
+      "source": "_quarto.yml"
+    },
+    {
+      "category": "rendered_manuscript_or_appendix",
+      "git_lfs_required": false,
+      "path": "appendix/appendix.html",
+      "sha256": "64b4f7d1c2926516c49b4c15278ac30e2c6f12b5737a9e4b9d2e98ec058dd22b",
+      "size": 1283564,
+      "source": "_output/report/appendix.html"
+    },
+    {
+      "category": "rendered_manuscript_or_appendix",
+      "git_lfs_required": false,
+      "path": "appendix/appendix.pdf",
+      "sha256": "92f59cff0f1e5780e3d6de54ee92a7e61831e98baaf2f9438686a00e197d9b81",
+      "size": 283806,
+      "source": "_output/report/appendix.pdf"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "data/README.md",
+      "sha256": "0adb296d983aeda485efad5fafe660275cf8adcbe76957a7b284a900a19781e7",
+      "size": 4233,
+      "source": "data/README.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "data/derived/cps.rds",
+      "sha256": "a0cde7e34ffbd8f540a261a69167a2f56c4fde2d0de0b6e6f65a20e288d6d137",
+      "size": 13570381,
+      "source": "data/derived/cps.rds"
+    },
+    {
+      "category": "provenance",
+      "git_lfs_required": false,
+      "path": "data/raw/catalog.json",
+      "sha256": "fa5a8f1c6eb108c033682e4b7966bece77bc22ddcec89ef9e1b339e5c7ef11d8",
+      "size": 968,
+      "source": "data/raw/catalog.json"
+    },
+    {
+      "category": "provenance",
+      "git_lfs_required": false,
+      "path": "data/raw/manifest.json",
+      "sha256": "4d8f1c37a29f8db55708dfde880fafa4ae55cf5bf81c5755494987e32ec2b63d",
+      "size": 1185,
+      "source": "data/raw/manifest.json"
+    },
+    {
+      "category": "acquired_source_files",
+      "git_lfs_required": false,
+      "path": "data/raw/originals/github-release/data_and_paper.zip",
+      "sha256": "a7479a211d034f8fb9209c03435b9be5742f690924c5880cd1a855d5040bc0e4",
+      "size": 91436493,
+      "source": "data/raw/originals/github-release/data_and_paper.zip"
+    },
+    {
+      "category": "provenance",
+      "git_lfs_required": false,
+      "path": "data/source-verification.json",
+      "sha256": "d253e1a2cd18c41dffdb1e3a428e9aca42e45d64b376432855fa5859d229bba3",
+      "size": 2979,
+      "source": "data/source-verification.json"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/analysis-plan.md",
+      "sha256": "6bf7e295bc2e7720840ab4eae811a9545aac4f89e20521d3fe49b218a1ef2b19",
+      "size": 17029,
+      "source": "docs/analysis-plan.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/causal-paper-template.md",
+      "sha256": "13037287e46e48dd5371c54b29073bbfb583f92c21906eac19a2c7ccc437b4f2",
+      "size": 9041,
+      "source": "docs/causal-paper-template.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/paper-reading-notes.md",
+      "sha256": "8a3f1dcbce8dbd39be2c246231ebdcb16618e7836c54d02009997301610fb7e4",
+      "size": 21140,
+      "source": "docs/paper-reading-notes.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/release.md",
+      "sha256": "e5c6c62267b2d1c9437d7a822e6b65e1901834eba4c52b387d7d344d72e305f5",
+      "size": 8576,
+      "source": "docs/release.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/replication-audit.md",
+      "sha256": "179e4012209382974ebbbf1fedca0de2f66f170a2b607028090f39de8185a238",
+      "size": 11658,
+      "source": "docs/replication-audit.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/source-audit.md",
+      "sha256": "cf170179cfaad00510021a427934e11eb59c3d46a84d2923ded3077238f997d3",
+      "size": 8199,
+      "source": "docs/source-audit.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/support-amendment.md",
+      "sha256": "b86e82893520c491da9929d81ada1facd0c9b5dc271183d1132d5c7913b5b278",
+      "size": 2031,
+      "source": "docs/support-amendment.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "docs/validation.md",
+      "sha256": "ec901ce238e5e3e702ff2e678352ac3ae89c51c81502b953a93dad0078375691",
+      "size": 5402,
+      "source": "docs/validation.md"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "env/conda-linux-64.lock",
+      "sha256": "47ec91e1ab908ebe71fa9ef16a7007df177f0bfc6614d660fe12650d65f15fa4",
+      "size": 28126,
+      "source": "env/conda-linux-64.lock"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "env/environment.yml",
+      "sha256": "defb30975930a47bd510fcc67115e082d3fcdab48f2261d80af3291ee9327e4f",
+      "size": 336,
+      "source": "env/environment.yml"
+    },
+    {
+      "category": "rendered_manuscript_or_appendix",
+      "git_lfs_required": false,
+      "path": "manuscript/paper.html",
+      "sha256": "702a0f9a9f5de1b1e7b1b0277f9586bf4af0c324d8b830e71ab6cc5e79882171",
+      "size": 1956700,
+      "source": "_output/report/paper.html"
+    },
+    {
+      "category": "rendered_manuscript_or_appendix",
+      "git_lfs_required": false,
+      "path": "manuscript/paper.pdf",
+      "sha256": "59e5f94b247cfa869ed46f712796cc1ca7d964ecb438312e6ccd92e13fadb196",
+      "size": 349849,
+      "source": "_output/report/paper.pdf"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "report/appendix.qmd",
+      "sha256": "65d29a3874b52a991b63c16202320af903834719a06c5119c63d1f61120a7793",
+      "size": 32726,
+      "source": "report/appendix.qmd"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "report/paper.qmd",
+      "sha256": "4a1796409c91195135674bd11ffed9034996580022bb9b272ee21b0a85b773c8",
+      "size": 45094,
+      "source": "report/paper.qmd"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "report/references.bib",
+      "sha256": "999f338d7dfb98ccd9d54f2f50dd8e3bfbe1564a83e2844e7a355bb67fac1a08",
+      "size": 3012,
+      "source": "report/references.bib"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/balance.csv",
+      "sha256": "a315653bf3a106945093257463c765663eddcaa575dab9c8c99c591741494661",
+      "size": 62168,
+      "source": "results/balance.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/bootstrap.csv",
+      "sha256": "45f26949e6a036fa0deb1a1190202189eb28bc408d2a5cc0a4315806fae5b3cf",
+      "size": 9951,
+      "source": "results/bootstrap.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/bootstrap_replicates.csv",
+      "sha256": "17346e3d9d80f16f8bb5209f86190e007fadfad988d724727f4c30399d836efa",
+      "size": 532835,
+      "source": "results/bootstrap_replicates.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/bootstrap_status.csv",
+      "sha256": "ce1a741029935f24cc1a558b4c6f0ef0b6513e3a2553c5e8fe7ca65c5a1f3df6",
+      "size": 161466,
+      "source": "results/bootstrap_status.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/data-quality.csv",
+      "sha256": "ed658da8f0da852f492c675375e3849ebb6e34c307ffc970f3a5df73cc7113fe",
+      "size": 87,
+      "source": "results/data-quality.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/descriptives.csv",
+      "sha256": "a4d324bba55e8e91c522c7a356f645ef4d2a6f3d860186f2a98081a5e84b1428",
+      "size": 6843,
+      "source": "results/descriptives.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/distributional.csv",
+      "sha256": "5c4a4aff9ca6b2213a3f3106c8d8c69d34ba596044b1e7f1d705c41ffa88fa8d",
+      "size": 10092,
+      "source": "results/distributional.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/event_study.csv",
+      "sha256": "25b4445c9b127c95d2e7d4edb731d277c3a58b802a0222e90946fbf50790c471",
+      "size": 13559,
+      "source": "results/event_study.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/exclusions.csv",
+      "sha256": "6fd441c41980420eec1079d497104f066fb06906ee5a37bf9681efd5937c0629",
+      "size": 152,
+      "source": "results/exclusions.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/extended_diagnostics.csv",
+      "sha256": "2394468df4ed7a0529f4de0ed5c2992f33fb160d15aeb61b1cf3d12f13adcf47",
+      "size": 6584,
+      "source": "results/extended_diagnostics.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/extension.csv",
+      "sha256": "d95c08f152d8bdac14fda89098d18377eb7d6b5da2821c296cd3fc9e78eff6c4",
+      "size": 7728,
+      "source": "results/extension.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/extension_failures.csv",
+      "sha256": "301dadf16cec75c8d049d2572afdaebef6c60cf2793ee186d2546359163eef64",
+      "size": 58,
+      "source": "results/extension_failures.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/extension_rich.csv",
+      "sha256": "d4332c90d977f39e077bd5b513db97119058956fbf1625dac08083f50bc10595",
+      "size": 7664,
+      "source": "results/extension_rich.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/extension_samples.csv",
+      "sha256": "7aa90ff1455b411db2b7d7f478b65f78edce73cbf600cf3f2cc2e9054399b5a5",
+      "size": 1491,
+      "source": "results/extension_samples.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/overlap.csv",
+      "sha256": "145ccfc25e5fdb4c3025f207e0dc149efcfb98210de6b0ddd85faa9c52669028",
+      "size": 19960,
+      "source": "results/overlap.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/placebo.csv",
+      "sha256": "6b792fccdaaa527f4e275c2f8ff2ea92880b08445a1cbc0dcddca2f6ad355999",
+      "size": 4008,
+      "source": "results/placebo.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/replication_benchmarks.csv",
+      "sha256": "afb745f5ba52b1aed4de1ac7782ec8291538d9da7556871aaffd280aa106ca63",
+      "size": 99313,
+      "source": "results/replication_benchmarks.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/replication_metadata.rds",
+      "sha256": "12797115086d0664863349230fe6b210ac76b8a955559d9664b3db1b7fcf8f0c",
+      "size": 684,
+      "source": "results/replication_metadata.rds"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/replication_models.csv",
+      "sha256": "96ced012dad2c8b115f3c233ee7f678e0532ea6ddaea67a3cfe9ba37036b3599",
+      "size": 2818,
+      "source": "results/replication_models.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/replication_table1.csv",
+      "sha256": "0356545d008465dcf1b19891b9081fb811b721fb187629cdc9752b400a299f20",
+      "size": 11022,
+      "source": "results/replication_table1.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/replication_table2.csv",
+      "sha256": "487c6c2465da7d431f0bc1c6eb6a3b85695fc2608a8efc1e9918c940eb062302",
+      "size": 18223,
+      "source": "results/replication_table2.csv"
+    },
+    {
+      "category": "analysis_data_and_run",
+      "git_lfs_required": false,
+      "path": "results/run-metadata.rds",
+      "sha256": "d8b203943741fd7ec0464fe2211a775b6fc38387eabd224622f1ac9e9d6ee3b8",
+      "size": 1095,
+      "source": "results/run-metadata.rds"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/sensitivity.csv",
+      "sha256": "5d27a39c0de3d5e019508c957cfc601b4e6529ec8037067619b58fcf0ef55444",
+      "size": 30659,
+      "source": "results/sensitivity.csv"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/session-info.txt",
+      "sha256": "8c1b3621ff6e39e8ba987b27fdf06c7f646479735d3f0bf6ccd84852993a6de5",
+      "size": 1508,
+      "source": "results/session-info.txt"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/01_annual_descriptives.md",
+      "sha256": "3b897320fd76ce1542ee884a89a87f06f218f40e8d8e8fd9bd4c613e6a8cd9ff",
+      "size": 9672,
+      "source": "results/tables/01_annual_descriptives.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/01_annual_descriptives.tex",
+      "sha256": "1ed907aef9badbc2e90299161946340258430492b234525e25f0821bd1807259",
+      "size": 6556,
+      "source": "results/tables/01_annual_descriptives.tex"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/02_main_estimators.md",
+      "sha256": "545e2f7bf885a472cb622343c00b6d9ee40be51fc6af772b00f338634df62fb7",
+      "size": 2483,
+      "source": "results/tables/02_main_estimators.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/02_main_estimators.tex",
+      "sha256": "69c7bab59dea179135f944466ccddd28f77e703a62ea17e573803d48a37dd0f4",
+      "size": 2251,
+      "source": "results/tables/02_main_estimators.tex"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/03_bootstrap.md",
+      "sha256": "3ec82429578f4aee7b4bd1f689e0937228378981551cfd4095aac90bc5a1d846",
+      "size": 4596,
+      "source": "results/tables/03_bootstrap.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/03_bootstrap.tex",
+      "sha256": "42fef464913faad546ed577cc5906753079819b13959ac3e46869c984f5fa5a2",
+      "size": 3932,
+      "source": "results/tables/03_bootstrap.tex"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/04_distributional.md",
+      "sha256": "ccd85245ac8710faebc3893930c290c3f458fcc52bc04d25e051ed2178368898",
+      "size": 2019,
+      "source": "results/tables/04_distributional.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/04_distributional.tex",
+      "sha256": "53f95d2c780b501475c2d8d09a9130c79026e362f3b748087f17f5dc35e8568b",
+      "size": 1687,
+      "source": "results/tables/04_distributional.tex"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/04_extension_rich.md",
+      "sha256": "f8f47f0be39f67fff67d4133942d49b4c9d91b86de8d67a9f40025bee75e0a68",
+      "size": 1786,
+      "source": "results/tables/04_extension_rich.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/04_extension_rich.tex",
+      "sha256": "8876f7e1a525bfca490637d8107db337cbf14241a7aa4b7baba7578fd55f36ee",
+      "size": 1484,
+      "source": "results/tables/04_extension_rich.tex"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/04_placebo.md",
+      "sha256": "81303b0eb85ff7eaae2e44416042efe78df2f96600311e41363ef10578c91ffe",
+      "size": 1018,
+      "source": "results/tables/04_placebo.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/04_placebo.tex",
+      "sha256": "7da4437ed6a35c855f48f9b720803a9805526622c2d87557e94796d8d70fdfab",
+      "size": 887,
+      "source": "results/tables/04_placebo.tex"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/05_failures.md",
+      "sha256": "292345a689ba3d99a668d30415d90de949d0e8bd687a0623f25815b826502587",
+      "size": 199,
+      "source": "results/tables/05_failures.md"
+    },
+    {
+      "category": "derived_assets",
+      "git_lfs_required": false,
+      "path": "results/tables/05_failures.tex",
+      "sha256": "9407e1fe72a1357899926214cc91641120bedfec73e5dff2158c93a898b554e3",
+      "size": 241,
+      "source": "results/tables/05_failures.tex"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "scripts/fetch_dataverse.py",
+      "sha256": "5c91b1c2b89f717a155aad512f4e809168186d031fc7e0c5851bf6e6e245a954",
+      "size": 10900,
+      "source": "scripts/fetch_dataverse.py"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "scripts/fetch_release.py",
+      "sha256": "7322748d865ddcea174125760fd6c5a7633605bff4cef7028519c52df3e1626b",
+      "size": 3533,
+      "source": "scripts/fetch_release.py"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "scripts/package_release.py",
+      "sha256": "d086c3d4c01672471a0a1c186f099a6085734631a9b2bcc2213bb806b70a9617",
+      "size": 29024,
+      "source": "scripts/package_release.py"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "scripts/run_analysis.R",
+      "sha256": "d65d4b29d33f372c4e0d0bc7d86f400c2f383534e6b3d75b4d87a47fe8e48a7a",
+      "size": 12351,
+      "source": "scripts/run_analysis.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "scripts/run_replication.R",
+      "sha256": "80996fc18ea9357b379e980892e9822687ac73aab9ae8233794ddd06629baf36",
+      "size": 1577,
+      "source": "scripts/run_replication.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test-bootstrap-did.R",
+      "sha256": "621a15dcf8535c4f81b22c5ad3bcf914685e5a5ec77471f3addecd98cacc7ef2",
+      "size": 5643,
+      "source": "tests/test-bootstrap-did.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test-data.R",
+      "sha256": "bc217469a8ad3726d54ea51be02c40017d87a5fc6ad47e5f7e8488880a185f4f",
+      "size": 3174,
+      "source": "tests/test-data.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test-estimate-did.R",
+      "sha256": "d20994b7c066dcc3ca3ab902205b3329eb1d42e7d9d708c8546f7fece880995e",
+      "size": 7839,
+      "source": "tests/test-estimate-did.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test-event-study.R",
+      "sha256": "eeb8cfdf2186ea9471c9036b0b637b91d7fac4e8fd8ff3794638c073e4e7f296",
+      "size": 1337,
+      "source": "tests/test-event-study.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test-extended-analysis.R",
+      "sha256": "95f893d91bcb9d5a6e240bb1aa32b8c1704f85750cdade46aa18947d8fe69743",
+      "size": 5239,
+      "source": "tests/test-extended-analysis.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test-pipeline.R",
+      "sha256": "179e1781d725e14395b1b5b18fa625d94de4c791b18ca0481041bfbe5b2fcb45",
+      "size": 20336,
+      "source": "tests/test-pipeline.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test-replication.R",
+      "sha256": "94d9231e5d9fdf5650a8d0eed180a650ac2bf3df8b27de5c4a0d20fb3a6146a3",
+      "size": 4784,
+      "source": "tests/test-replication.R"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test_fetch_dataverse.py",
+      "sha256": "6a16ab95d139a0eeb8b336d145ade9caa5310a0a961fd550e202e40f8d5a890e",
+      "size": 4814,
+      "source": "tests/test_fetch_dataverse.py"
+    },
+    {
+      "category": "source_and_documentation",
+      "git_lfs_required": false,
+      "path": "tests/test_package_release.py",
+      "sha256": "6354a31693fcb5272da8846698d588fd80120f5d7c52b622fa2ff5bb8da5c8c2",
+      "size": 17454,
+      "source": "tests/test_package_release.py"
+    }
+  ],
+  "git_lfs_required": [],
+  "kind": "empirical_research_release",
+  "large_file_threshold_bytes": 99614720,
+  "materialized": true,
+  "note": "Hashes inventory the released artifacts; they do not independently establish the scientific interpretation or prove that a manuscript was derived from those inputs.",
+  "provenance": {
+    "canonical_rows": 709125,
+    "data_kind": "empirical",
+    "git_commit": "3334cc82f099958be49fd4bc2f76c26b0ed00b21",
+    "input_md5": "98b2459432541e95839e4b19d720f125",
+    "input_path": "data/raw/extracted/github-release/data_and_paper/marcps_w.sas7bdat",
+    "input_sha256": "1f5a66450f5307dfc8ed3523abdd0777cb1c13a77d81fee3f6fa152db2560a6d",
+    "mapping_status": "publication_and_source_labels_verified",
+    "replication_status": "reconstruction_discrepancies_reported",
+    "run_utc": "2026-11-05 06:28:43 UTC"
+  },
+  "referenced_dataset_doi": "doi:10.7910/DVN/WCNKB1",
+  "replication_comparison": {
+    "audit_path": "docs/replication-audit.md",
+    "discrepancies": 7,
+    "discrepant_benchmark_ids": [
+      "Table 1|female|old|weeks|mean|1996| 1",
+      "Table 2|male|old|weeks|std_error|1988|NA",
+      "Table 2|male|young|log_weekly_wage|std_error|1991|NA",
+      "Table 2|female|young|log_weekly_wage|coefficient|1992|NA",
+      "Table 2|female|young|log_weekly_wage|std_error|1993|NA",
+      "Table 2|male|old|log_weekly_wage|std_error|1993|NA",
+      "Table 2|female|old|log_weekly_wage|std_error|1994|NA"
+    ],
+    "note": "7 of 272 executed comparisons exceed their recorded tolerance. These discrepancies are retained and discussed in docs/replication-audit.md; this release does not claim a perfect replication.",
+    "passed": 265,
+    "status": "reconstruction_discrepancies_reported",
+    "total": 272,
+    "unrun": 0
+  },
+  "schema_version": 1,
+  "source": {
+    "completeness_scope": "Single supplied release archive, not the complete original deposit",
+    "doi_status": "Referenced by historical repository; equality to complete Dataverse deposit not independently verified",
+    "original_programs_available": false,
+    "referenced_dataset_doi": "doi:10.7910/DVN/WCNKB1",
+    "source_type": "github_release_mirror",
+    "source_url": "https://github.com/Frankyin-jpg/Stat-256-Final-Project/releases/download/replication-data-v1/data_and_paper.zip",
+    "verification_basis": {
+      "limitations": [
+        "No original SAS programs are present; this is not source-code equivalence verification.",
+        "The supplied archive is an user-provided GitHub release, not a verified complete Dataverse acquisition.",
+        "Matching sample sizes does not by itself verify every historical estimate; independent numerical benchmarks are stored separately.",
+        "The legacy CPI/positive-wage/trimming construction matches all eight outcome sample counts but its original programming cannot be inspected."
+      ],
+      "population": "Ages21\u201358; FNLWGT2 strictlypositive;709125 retained records. All retained outcome/covariate fields used here are observed.",
+      "publication_timing": "Proof pp11\u201312 state outcomes1987\u20131996 from March1988\u20131997; Table1 andFigures1,4,5 use survey dates; other tables/figures use observation year=survey year\u22121.",
+      "sample_counts": [
+        {
+          "age_sample": "young",
+          "sex": "male",
+          "wages": 167974,
+          "weeks": 193317
+        },
+        {
+          "age_sample": "young",
+          "sex": "female",
+          "wages": 157688,
+          "weeks": 211910
+        },
+        {
+          "age_sample": "old",
+          "sex": "male",
+          "wages": 116665,
+          "weeks": 146309
+        },
+        {
+          "age_sample": "old",
+          "sex": "female",
+          "wages": 109082,
+          "weeks": 157589
+        }
+      ],
+      "sample_counts_reference": "Table2, supplied checked proof p17; exact all four weeks and all four wage sample counts independently visually checked.",
+      "source_labels": "YEAR is year of survey; WKSWORK is weeks worked last year; DISABL1 exactly equals DIS_HP==1 in all 971058 supplied records; education flags are exhaustive and mutually exclusive.",
+      "weights": "FNLWGT2 selected consistently with exact published sample counts and tested estimates; source has adjusted weights varying from FNLWGT in1990\u20131992. Division by100 only normalizes scale; original weight-construction code is unavailable."
+    }
+  }
+}

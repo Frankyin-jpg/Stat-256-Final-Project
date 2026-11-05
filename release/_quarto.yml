@@ -1,0 +1,11 @@
+project:
+  type: default
+  output-dir: _output
+  execute-dir: project
+  render:
+    - report/paper.qmd
+    - report/appendix.qmd
+execute:
+  error: false
+  warning: false
+  cache: false

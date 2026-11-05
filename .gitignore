@@ -1,0 +1,15 @@
+data/raw/*
+!data/raw/.gitkeep
+data/derived/*
+!data/derived/.gitkeep
+results/*
+!results/.gitkeep
+_output/
+.quarto/
+*.Rhistory
+*.RData
+__pycache__/
+.DS_Store
+
+/.quarto/
+**/*.quarto_ipynb

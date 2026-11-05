@@ -1,0 +1,29 @@
+{
+  "archive_contents": [
+    {
+      "crc32": "a5ca4ed7",
+      "path": "data_and_paper/marcps_w.sas7bdat",
+      "size": 1136444416
+    },
+    {
+      "crc32": "488ba227",
+      "path": "__MACOSX/data_and_paper/._marcps_w.sas7bdat",
+      "size": 480
+    },
+    {
+      "crc32": "129ae53a",
+      "path": "data_and_paper/Consequences of Employment Protection The Case of.pdf",
+      "size": 674637
+    },
+    {
+      "crc32": "62a42b48",
+      "path": "__MACOSX/data_and_paper/._Consequences of Employment Protection The Case of.pdf",
+      "size": 706
+    }
+  ],
+  "referenced_dataset_doi": "doi:10.7910/DVN/WCNKB1",
+  "release_tag": "replication-data-v1",
+  "scope": "Repository author's supplied SAS data and paper; original SAS programs are absent; not a complete Dataverse acquisition",
+  "source_type": "github_release_mirror",
+  "source_url": "https://github.com/Frankyin-jpg/Stat-256-Final-Project/releases/download/replication-data-v1/data_and_paper.zip"
+}
